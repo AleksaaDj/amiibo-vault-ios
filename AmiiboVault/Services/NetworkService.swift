@@ -56,7 +56,6 @@ class NetworkService: ObservableObject {
     
     func fetchAllNintendoGames(apiKey: String) -> AnyPublisher<[Game], Error> {
         var allGames: [Game] = []
-        var currentPage = 1
         let pageSize = 40
         
         return Publishers.Sequence(sequence: 1...)

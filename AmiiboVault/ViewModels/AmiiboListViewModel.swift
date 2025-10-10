@@ -69,10 +69,7 @@ class AmiiboListViewModel: ObservableObject {
     }
     
     private func loadFromDatabase() {
-        isLoading = true
-        errorMessage = nil
-        
-        // Preserve current featured Amiibo before loading
+        // Load from database instantly - no loading state needed
         let currentFeatured = featuredAmiibo
         
         // Load from database with current sort and filters
@@ -83,33 +80,23 @@ class AmiiboListViewModel: ObservableObject {
             sortType: sortType
         )
         
-        // Update UI
+        // Update UI instantly
         amiiboList = localAmiibos
         filteredAmiiboList = localAmiibos
-        isLoading = false
         
         // Load collection and wishlist data
         loadCollectionAndWishlist()
         
         // Restore featured Amiibo if it was cleared
         if featuredAmiibo == nil && currentFeatured != nil {
-            print("🔄 Restoring featured Amiibo: \(currentFeatured?.character ?? "Unknown")")
             featuredAmiibo = currentFeatured
         }
         
-        // Debug: Check current featured Amiibo state
-        if let featured = featuredAmiibo {
-            print("✅ Featured Amiibo after load: \(featured.character)")
-        } else {
-            print("❌ No featured Amiibo after load")
-        }
-        
-        print("✅ Loaded \(localAmiibos.count) Amiibos from database")
-        
-        // Only check API once when app starts, not on every screen change
+        // Load featured Amiibo from API on every start (changes frequently)
         if !hasCheckedAPI {
             hasCheckedAPI = true
-            checkAndUpdateFromAPI(localCount: localAmiibos.count)
+            loadFeaturedAmiiboFromAPI()
+            syncWithAPIInBackground(localCount: localAmiibos.count)
         }
     }
     
@@ -130,29 +117,24 @@ class AmiiboListViewModel: ObservableObject {
         loadCollectionAndWishlist()
         
         lastRefreshTime = Date()
-        print("✅ Refreshed \(localAmiibos.count) Amiibos from database")
     }
     
     private func loadFromAPI() {
         isLoading = true
         errorMessage = nil
         
-        print("🌐 Fetching from API...")
-        
         networkService.fetchAmiiboList()
             .sink(
                 receiveCompletion: { [weak self] completion in
                     self?.isLoading = false
                     if case .failure(let error) = completion {
-                        print("❌ Error fetching Amiibo data: \(error.localizedDescription)")
                         self?.errorMessage = error.localizedDescription
                     }
                 },
                 receiveValue: { [weak self] response in
-                    print("✅ Successfully fetched \(response.amiibo.count) Amiibos from API")
                     
                     // Debug: Check first few Amiibos for release data
-                    for (index, amiibo) in response.amiibo.prefix(3).enumerated() {
+                    for (_, _) in response.amiibo.prefix(3).enumerated() {
                     }
                     
                     self?.saveToDatabase(response.amiibo)
@@ -161,34 +143,86 @@ class AmiiboListViewModel: ObservableObject {
             .store(in: &cancellables)
     }
     
-    private func checkAndUpdateFromAPI(localCount: Int) {
-        // Always fetch from API on first load to get complete data with release info
-        print("🌐 Fetching from API to get complete data with release info...")
-        loadFromAPI()
+    private func loadFeaturedAmiiboFromAPI() {
+        // Load featured Amiibo from Firebase on every start (changes frequently)
+        firebaseService.fetchFeaturedAmiibo { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let firebaseData):
+                    // Search for the Amiibo in our local database by tail
+                    if let localAmiibo = self?.amiiboList.first(where: { $0.tail == firebaseData.tail }) {
+                        self?.featuredAmiibo = localAmiibo
+                    } else {
+                        // Fallback to database if not found locally
+                        self?.loadFeaturedAmiiboFromDatabase()
+                    }
+                case .failure(_):
+                    // Fallback to database if Firebase fails
+                    self?.loadFeaturedAmiiboFromDatabase()
+                }
+            }
+        }
     }
     
-    private func updateFromAPIIfNeeded(localCount: Int) {
-        // Background update - only if remote has more data (like Android)
-        networkService.fetchAmiiboList()
-            .sink(
-                receiveCompletion: { completion in
-                    if case .failure(let error) = completion {
-                        print("❌ Background API check failed: \(error.localizedDescription)")
-                    }
-                },
-                receiveValue: { [weak self] response in
-                    let remoteCount = response.amiibo.count
-                    print("🔄 API check: Local=\(localCount), Remote=\(remoteCount)")
-                    
-                    if remoteCount > localCount {
-                        print("📥 Updating database with \(remoteCount) Amiibos")
-                        self?.saveToDatabase(response.amiibo)
-                    } else {
-                        print("✅ Local data is up to date")
-                    }
+    private func syncWithAPIInBackground(localCount: Int) {
+        // Background sync - doesn't block UI
+        DispatchQueue.global(qos: .background).async { [weak self] in
+            guard let self = self else { return }
+            
+            // Only check API if we have local data
+            guard localCount > 0 else {
+                // No local data, load from API normally
+                DispatchQueue.main.async {
+                    self.loadFromAPI()
                 }
-            )
-            .store(in: &cancellables)
+                return
+            }
+            
+            // Check if we should refresh (every 5 minutes)
+            guard self.shouldRefreshData() else {
+                return
+            }
+            
+            // Quick API check to see if there are new Amiibos
+            self.networkService.fetchAmiiboList()
+                .sink(
+                    receiveCompletion: { completion in
+                        if case .failure(_) = completion {
+                            // API failed, but we have local data so continue silently
+                        }
+                    },
+                    receiveValue: { response in
+                        let apiCount = response.amiibo.count
+                        
+                        // If API has more Amiibos, update database silently
+                        if apiCount > localCount {
+                            DispatchQueue.main.async {
+                                self.updateDatabaseWithAPIResponse(response)
+                            }
+                        }
+                    }
+                )
+                .store(in: &self.cancellables)
+        }
+    }
+    
+    private func updateDatabaseWithAPIResponse(_ response: AmiiboListResponse) {
+        // Update database with new API data
+        coreDataService.upsertAmiibos(response.amiibo)
+        
+        // Refresh UI with updated data
+        let updatedAmiibos = coreDataService.getFilteredAmiibos(
+            searchQuery: searchText.isEmpty ? nil : searchText,
+            typeFilter: selectedType,
+            setFilter: selectedSet,
+            sortType: sortType
+        )
+        
+        amiiboList = updatedAmiibos
+        filteredAmiiboList = updatedAmiibos
+        
+        // Update collection and wishlist
+        loadCollectionAndWishlist()
     }
     
     private func saveToDatabase(_ amiibos: [Amiibo]) {
@@ -198,8 +232,6 @@ class AmiiboListViewModel: ObservableObject {
         let updatedAmiibos = coreDataService.getAllAmiibos(sortType: sortType)
         amiiboList = updatedAmiibos
         filteredAmiiboList = updatedAmiibos
-        
-        print("💾 Saved \(amiibos.count) Amiibos to database and refreshed UI")
     }
     
     // MARK: - Search and Filtering (Database-Based)
@@ -365,6 +397,7 @@ class AmiiboListViewModel: ObservableObject {
         return amiibo.isInCollection
     }
     
+    
     // MARK: - Wishlist Management (Database-Based)
     func addToWishlist(_ amiibo: Amiibo) {
         coreDataService.updateAmiiboWishlistStatus(tail: amiibo.tail, isInWishlist: true)
@@ -433,8 +466,9 @@ class AmiiboListViewModel: ObservableObject {
     
     // MARK: - Collection and Wishlist Management
     func loadCollectionAndWishlist() {
-        collectionAmiibos = amiiboList.filter { $0.isInCollection }
-        wishlistAmiibos = amiiboList.filter { $0.isInWishlist }
+        // Get collection and wishlist directly from database (unfiltered by main screen)
+        collectionAmiibos = coreDataService.getCollectionAmiibos()
+        wishlistAmiibos = coreDataService.getWishlistAmiibos()
     }
     
     func refreshCollectionAndWishlist() {
@@ -443,8 +477,6 @@ class AmiiboListViewModel: ObservableObject {
     
     // MARK: - Featured Amiibo Management
     func fetchFeaturedAmiiboFromFirebase() {
-        print("🔥 Fetching featured Amiibo from Firebase...")
-        
         // First, get current featured Amiibo from local database
         let currentFeaturedAmiibos = coreDataService.getFeaturedAmiibo()
         let currentFeaturedAmiibo = currentFeaturedAmiibos.first
@@ -459,11 +491,10 @@ class AmiiboListViewModel: ObservableObject {
             DispatchQueue.main.async {
                 switch result {
                 case .success(let firebaseData):
-                    print("✅ Featured Amiibo data received from Firebase: tail=\(firebaseData.tail)")
                     self?.updateFeaturedAmiiboFromFirebase(firebaseData, currentFeatured: currentFeaturedAmiibo)
-                case .failure(let error):
-                    print("❌ Failed to fetch featured Amiibo: \(error)")
+                case .failure(_):
                     // Keep using local database result
+                    break
                 }
             }
         }
@@ -472,12 +503,9 @@ class AmiiboListViewModel: ObservableObject {
     private func updateFeaturedAmiiboFromFirebase(_ firebaseData: FirebaseFeaturedAmiibo, currentFeatured: Amiibo?) {
         // Search for the Amiibo in our local database by tail
         if let localAmiibo = amiiboList.first(where: { $0.tail == firebaseData.tail }) {
-            print("🔍 Found Amiibo in local database: \(localAmiibo.character)")
             
             // Check if the Firebase Amiibo is different from current featured
             if firebaseData.tail != currentFeatured?.tail {
-                print("🔄 Featured Amiibo changed from \(currentFeatured?.character ?? "none") to \(localAmiibo.character)")
-                
                 // Remove current featured status from all Amiibos
                 if let current = currentFeatured {
                     coreDataService.setFeaturedAmiibo(amiibo: current, featured: false, color: 0)
@@ -504,36 +532,27 @@ class AmiiboListViewModel: ObservableObject {
                     isInWishlist: localAmiibo.isInWishlist
                 )
                 
-                // Debug logging for release data
-                if let release = localAmiibo.release {
-                    print("🔍 Featured Amiibo release data: JP=\(release.jp ?? "nil"), NA=\(release.na ?? "nil"), EU=\(release.eu ?? "nil"), AU=\(release.au ?? "nil")")
-                } else {
-                    print("⚠️ Featured Amiibo has no release data")
-                }
-                
                 // Update the published property
                 featuredAmiibo = updatedAmiibo
-                
-                print("✅ Featured Amiibo updated: \(updatedAmiibo.character)")
-            } else {
-                print("ℹ️ Featured Amiibo unchanged: \(localAmiibo.character)")
             }
-        } else {
-            print("⚠️ Featured Amiibo not found in local database: tail=\(firebaseData.tail)")
-            // Keep using current featured Amiibo
         }
     }
     
     func loadFeaturedAmiiboFromDatabase() {
+        // Preserve current featured Amiibo if it exists
+        let currentFeatured = featuredAmiibo
+        
         // Get featured Amiibo from database
         let featuredAmiibos = coreDataService.getFeaturedAmiibo()
-        print("🔍 Loading featured Amiibo from database: \(featuredAmiibos.count) found")
+        
         if let featured = featuredAmiibos.first {
-            print("✅ Featured Amiibo: \(featured.character)")
+            featuredAmiibo = featured
         } else {
-            print("❌ No featured Amiibo found in database")
+            // Only clear if we don't have a current featured amiibo
+            if currentFeatured == nil {
+                featuredAmiibo = nil
+            }
         }
-        featuredAmiibo = featuredAmiibos.first
     }
     
     func setFeaturedAmiibo(_ amiibo: Amiibo, color: Int) {
@@ -544,5 +563,22 @@ class AmiiboListViewModel: ObservableObject {
     func removeFeaturedAmiibo(_ amiibo: Amiibo) {
         coreDataService.setFeaturedAmiibo(amiibo: amiibo, featured: false, color: 0)
         loadFeaturedAmiiboFromDatabase()
+    }
+    
+    // MARK: - Collection Image Generation
+    func createAndDownloadCompositeImage(completion: @escaping (Bool) -> Void) {
+        
+        let collectionAmiibos = coreDataService.getCollectionAmiibos()
+        if collectionAmiibos.isEmpty {
+            completion(false)
+            return
+        }
+        
+        let compositeHelper = CompositeImageHelper()
+        compositeHelper.createAndSaveCompositeImage(amiiboList: collectionAmiibos) { success in
+            DispatchQueue.main.async {
+                completion(success)
+            }
+        }
     }
 }

@@ -218,7 +218,6 @@ class CoreDataService: ObservableObject {
         let request: NSFetchRequest<AmiiboEntity> = AmiiboEntity.fetchRequest()
         request.sortDescriptors = getSortDescriptors(for: sortType)
         
-        print("🔍 CoreDataService: Fetching with sort type: \(sortType ?? "default")")
         
         do {
             let entities = try context.fetch(request)
@@ -234,14 +233,11 @@ class CoreDataService: ObservableObject {
                             jp: String(components[2]),
                             na: String(components[3])
                         )
-                        print("🔍 Found release data for \(entity.name ?? "unknown"): \(releaseDataString)")
                     } else {
                         release = nil
-                        print("🔍 Invalid release data format for \(entity.name ?? "unknown"): \(releaseDataString)")
                     }
                 } else {
                     release = nil
-                    print("🔍 No release data for \(entity.name ?? "unknown")")
                 }
                 
                 return Amiibo(
@@ -259,11 +255,6 @@ class CoreDataService: ObservableObject {
                     isInCollection: entity.isInCollectionValue,
                     isInWishlist: entity.isInWishlistValue
                 )
-            }
-            print("📊 CoreDataService: Fetched \(amiibos.count) Amiibos")
-            if amiibos.count > 0 {
-                print("📝 First Amiibo: \(amiibos[0].name)")
-                print("📝 Last Amiibo: \(amiibos[amiibos.count-1].name)")
             }
             return amiibos
         } catch {
@@ -461,11 +452,8 @@ class CoreDataService: ObservableObject {
     // Convert Release to string (Android approach: "au,eu,jp,na")
     private func convertReleaseToString(_ release: Release?) -> String? {
         guard let release = release else { 
-            print("🔍 convertReleaseToString: No release data")
             return nil 
         }
-        
-        print("🔍 convertReleaseToString: au=\(release.au ?? "nil"), eu=\(release.eu ?? "nil"), jp=\(release.jp ?? "nil"), na=\(release.na ?? "nil")")
         
         // Check if any release data exists
         let hasAnyData = !(release.au?.isEmpty ?? true) || 
@@ -475,10 +463,8 @@ class CoreDataService: ObservableObject {
         
         if hasAnyData {
             let result = "\(release.au ?? ""),\(release.eu ?? ""),\(release.jp ?? ""),\(release.na ?? "")"
-            print("🔍 convertReleaseToString: Result = \(result)")
             return result
         } else {
-            print("🔍 convertReleaseToString: No valid data found")
             return nil
         }
     }

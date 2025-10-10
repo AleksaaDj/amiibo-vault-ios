@@ -187,6 +187,10 @@ struct AmiiboDetailsView: View {
             }
         }
         .background(themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(red: 1.0, green: 0.984, blue: 0.996))
+        .onTapGesture {
+            // Dismiss keyboard when tapping anywhere on the details screen
+            dismissKeyboard()
+        }
         .onAppear {
             isDetailsPresented = true
         }

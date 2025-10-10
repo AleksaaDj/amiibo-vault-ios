@@ -82,7 +82,8 @@ struct CollectionView: View {
             CollectionFilterControlsView(
                 selectedType: $selectedType,
                 selectedSet: $selectedSet,
-                selectedSort: $selectedSort
+                selectedSort: $selectedSort,
+                viewModel: viewModel
             )
             .padding(.horizontal, 20)
             .padding(.top, 10)
@@ -92,19 +93,55 @@ struct CollectionView: View {
                 .background(Color.gray.opacity(0.3))
                 .padding(.top, 10)
             
-            // Amiibo Grid
+            // Amiibo Grid or Empty State
             ScrollView {
-                LazyVGrid(columns: [
-                    GridItem(.flexible()),
-                    GridItem(.flexible()),
-                    GridItem(.flexible())
-                ], spacing: 20) {
-                    ForEach(currentAmiiboList) { amiibo in
-                        CollectionGridItem(amiibo: amiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)
+                if currentAmiiboList.isEmpty {
+                    // Empty State
+                    VStack(spacing: 16) {
+                        Spacer()
+                        
+                        // Icon
+                        Image(systemName: selectedTab == 0 ? "plus.circle" : "bookmark")
+                            .font(.system(size: 40))
+                            .foregroundColor(.appRed)
+                        
+                        // Message
+                        VStack(spacing: 6) {
+                            Text(selectedTab == 0 ? "Your Collection is empty" : "Your Wishlist is empty")
+                                .font(.title3)
+                                .fontWeight(.medium)
+                                .foregroundColor(themeManager.isDarkMode ? .white : .black)
+                            
+                            Text(hasActiveFilters ? 
+                                 "No amiibo match your current filters. Try adjusting the filters above." :
+                                 (selectedTab == 0 ? 
+                                  "Add amiibo by clicking 'add to my collection' button on amiibo details screen." :
+                                  "Add amiibo by clicking on bookmark icon on amiibo details screen"))
+                                .font(.subheadline)
+                                .foregroundColor(themeManager.isDarkMode ? .white.opacity(0.7) : .gray)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 40)
+                        }
+                        
+                        Spacer()
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding(.top, 80)
+                    .padding(.bottom, 40)
+                } else {
+                    // Amiibo Grid
+                    LazyVGrid(columns: [
+                        GridItem(.flexible()),
+                        GridItem(.flexible()),
+                        GridItem(.flexible())
+                    ], spacing: 20) {
+                        ForEach(currentAmiiboList) { amiibo in
+                            CollectionGridItem(amiibo: amiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 20)
                 }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 20)
             }
         }
         .onAppear {
@@ -151,6 +188,10 @@ struct CollectionView: View {
         return filteredList
     }
     
+    private var hasActiveFilters: Bool {
+        return selectedType != nil || selectedSet != nil || selectedSort != nil
+    }
+    
     private func clearFilters() {
         selectedType = nil
         selectedSet = nil
@@ -158,10 +199,10 @@ struct CollectionView: View {
     }
     
     private func getWorldwideCountForCurrentFilters() -> Int {
-        // Get all amiibos from the main list
-        let allAmiibos = viewModel.amiiboList
+        // Get all amiibos from database (unfiltered by main screen)
+        let allAmiibos = CoreDataService.shared.getAllAmiibos()
         
-        // Apply the same filters as currentAmiiboList but to all amiibos
+        // Apply only the Collection screen filters
         var filteredList = allAmiibos
         
         // Apply type filter
@@ -291,9 +332,12 @@ struct CollectionFilterControlsView: View {
     @Binding var selectedType: String?
     @Binding var selectedSet: String?
     @Binding var selectedSort: String?
+    let viewModel: AmiiboListViewModel
     @State private var showingTypeOptions = false
     @State private var showingSetOptions = false
     @State private var showingSortOptions = false
+    @State private var showingImageDialog = false
+    @State private var showingSuccessAlert = false
     
     var body: some View {
         HStack {
@@ -361,6 +405,15 @@ struct CollectionFilterControlsView: View {
             }
             
             Spacer()
+            
+            // Download Image Button
+            Button(action: {
+                showingImageDialog = true
+            }) {
+                Image(systemName: "arrow.down.circle")
+                    .font(.system(size: 20, weight: .regular))
+                    .foregroundColor(.appRed)
+            }
         }
         .sheet(isPresented: $showingTypeOptions) {
             CollectionTypeFilterView(selectedType: $selectedType)
@@ -370,6 +423,28 @@ struct CollectionFilterControlsView: View {
         }
         .sheet(isPresented: $showingSortOptions) {
             CollectionSortFilterView(selectedSort: $selectedSort)
+        }
+        .sheet(isPresented: $showingImageDialog) {
+            CollectionImageDialog(
+                onDismiss: {
+                    showingImageDialog = false
+                },
+                onConfirm: {
+                    viewModel.createAndDownloadCompositeImage { success in
+                        if success {
+                            showingSuccessAlert = true
+                        }
+                    }
+                    showingImageDialog = false
+                }
+            )
+        }
+        .alert("Success!", isPresented: $showingSuccessAlert) {
+            Button("OK") {
+                showingSuccessAlert = false
+            }
+        } message: {
+            Text("Your collection image has been successfully saved to your Photos library!")
         }
     }
 }
@@ -499,6 +574,89 @@ struct CollectionSortFilterView: View {
                     }
                 }
             }
+        }
+    }
+}
+
+struct CollectionImageDialog: View {
+    let onDismiss: () -> Void
+    let onConfirm: () -> Void
+    @StateObject private var themeManager = ThemeManager.shared
+    
+    var body: some View {
+        ZStack {
+            // Background for the entire dialog
+            (themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color.white)
+                .ignoresSafeArea()
+            
+            VStack(spacing: 0) {
+                // Header with red background
+                VStack(spacing: 16) {
+                Text("Collection Image")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(.white)
+                    .padding(.top, 15)
+                    .padding(.bottom, 16)
+                
+                Text("The image will be generated using your current collection and will be saved to your local storage, making it easy for you to share with others or creating post in community collection!")
+                    .font(.system(size: 16, weight: .regular))
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 16)
+                
+                // Example Image
+                Image("composite_image_example")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 16)
+                
+                Text("Example image")
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundColor(.white)
+                    .padding(.top, 4)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                
+                // Buttons
+                HStack(spacing: 0) {
+                    Button(action: onDismiss) {
+                        Text("Dismiss")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(.white)
+                            .padding(8)
+                    }
+                    
+                    Spacer()
+                    
+                    Button(action: onConfirm) {
+                        Text("Create Image")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(.white)
+                            .padding(8)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 10)
+                .padding(.bottom, 20)
+            }
+            .background(
+                RoundedRectangle(cornerRadius: 7)
+                    .fill(Color.appRed)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 7)
+                            .fill(Color.appRed)
+                            .mask(
+                                RoundedRectangle(cornerRadius: 7)
+                                    .offset(x: 20, y: 20)
+                                    .blur(radius: 10)
+                            )
+                    )
+            )
+            }
+            .cornerRadius(7)
+            .shadow(radius: 10)
+            .padding(.horizontal, 20)
+            .padding(.bottom, 50)
         }
     }
 }

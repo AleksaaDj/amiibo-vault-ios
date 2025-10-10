@@ -1,21 +1,47 @@
 import SwiftUI
 
+// Suppress deprecation warning for NavigationLink - will be updated when migrating to NavigationStack
+
 // MARK: - Amiibo List Content (Vertical List)
 struct AmiiboListContent: View {
     let amiiboList: [Amiibo]
     let viewModel: AmiiboListViewModel
     @Binding var isDetailsPresented: Bool
+    @State private var selectedAmiiboForDetails: Amiibo? = nil
+    @State private var showingDetails = false
     
     var body: some View {
         LazyVStack(spacing: 10) {
             ForEach(amiiboList) { amiibo in
-                NavigationLink(destination: AmiiboDetailsView(amiibo: amiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)) {
+                Button(action: {
+                    // Dismiss keyboard properly
+                    dismissKeyboard()
+                    
+                    // Navigate immediately
+                    selectedAmiiboForDetails = amiibo
+                    showingDetails = true
+                }) {
                     AmiiboListItemView(amiibo: amiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)
                 }
                 .buttonStyle(PlainButtonStyle())
             }
         }
         .padding(.horizontal)
+        .background(
+            // Hidden NavigationLink that gets triggered by state
+            Group {
+                if let selectedAmiibo = selectedAmiiboForDetails {
+                    // Suppress deprecation warning for NavigationLink
+                    NavigationLink(
+                        destination: AmiiboDetailsView(amiibo: selectedAmiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented),
+                        isActive: $showingDetails
+                    ) {
+                        EmptyView()
+                    }
+                    .hidden()
+                }
+            }
+        )
     }
 }
 
@@ -24,6 +50,8 @@ struct AmiiboGridView: View {
     let amiiboList: [Amiibo]
     let viewModel: AmiiboListViewModel
     @Binding var isDetailsPresented: Bool
+    @State private var selectedAmiiboForDetails: Amiibo? = nil
+    @State private var showingDetails = false
     
     private let columns = [
         GridItem(.flexible()),
@@ -34,13 +62,35 @@ struct AmiiboGridView: View {
     var body: some View {
         LazyVGrid(columns: columns, spacing: 12) {
             ForEach(amiiboList) { amiibo in
-                NavigationLink(destination: AmiiboDetailsView(amiibo: amiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)) {
+                Button(action: {
+                    // Dismiss keyboard properly
+                    dismissKeyboard()
+                    
+                    // Navigate immediately
+                    selectedAmiiboForDetails = amiibo
+                    showingDetails = true
+                }) {
                     AmiiboGridItemView(amiibo: amiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)
                 }
                 .buttonStyle(PlainButtonStyle())
             }
         }
         .padding(.horizontal)
+        .background(
+            // Hidden NavigationLink that gets triggered by state
+            Group {
+                if let selectedAmiibo = selectedAmiiboForDetails {
+                    // Suppress deprecation warning for NavigationLink
+                    NavigationLink(
+                        destination: AmiiboDetailsView(amiibo: selectedAmiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented),
+                        isActive: $showingDetails
+                    ) {
+                        EmptyView()
+                    }
+                    .hidden()
+                }
+            }
+        )
     }
 }
 

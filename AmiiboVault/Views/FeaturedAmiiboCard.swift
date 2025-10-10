@@ -2,7 +2,6 @@ import SwiftUI
 
 struct FeaturedAmiiboCard: View {
     let featuredAmiibo: Amiibo?
-    let onTap: (Amiibo) -> Void
     @StateObject private var themeManager = ThemeManager.shared
     
     var body: some View {
@@ -76,9 +75,6 @@ struct FeaturedAmiiboCard: View {
                 .padding(.horizontal, 20)
             }
             .contentShape(Rectangle())
-            .onTapGesture {
-                onTap(amiibo)
-            }
         }
     }
 }
@@ -96,8 +92,7 @@ struct FeaturedAmiiboCard: View {
             type: "Figure",
             featured: true,
             color: 0xFF6B6B6B
-        ),
-        onTap: { _ in }
+        )
     )
     .padding()
 }

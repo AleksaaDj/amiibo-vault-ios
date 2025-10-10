@@ -3,61 +3,76 @@ import SwiftUI
 struct PostsView: View {
     @StateObject private var viewModel = PostsViewModel()
     @StateObject private var themeManager = ThemeManager.shared
+    @State private var showingCreatePost = false
     
     var body: some View {
-        NavigationView {
-            VStack(spacing: 0) {
-                // Header
-                HStack {
-                    Text("Community collections")
-                        .font(.title2)
-                        .fontWeight(.regular)
-                        .foregroundColor(themeManager.isDarkMode ? .white : .black)
-                    Spacer()
-                }
-                .padding(.horizontal)
-                .padding(.top, 8)
-                .padding(.bottom, 16)
+        VStack(spacing: 0) {
+            // Header
+            HStack {
+                Text("Community collections")
+                    .font(.title2)
+                    .fontWeight(.regular)
+                    .foregroundColor(themeManager.isDarkMode ? .white : .black)
+                Spacer()
                 
-                if viewModel.isLoading {
-                    Spacer()
-                    ProgressView("Loading posts...")
-                        .foregroundColor(.appRed)
-                    Spacer()
-                } else if viewModel.posts.isEmpty {
-                    Spacer()
-                    VStack {
-                        Image(systemName: "photo.on.rectangle")
-                            .font(.system(size: 50))
-                            .foregroundColor(.gray)
-                        Text("No posts yet")
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
+                Button(action: {
+                    showingCreatePost = true
+                }) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.appRed)
+                            .frame(width: 28, height: 28)
+                        
+                        Image(systemName: "plus")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(.white)
                     }
-                    .padding()
-                    Spacer()
-                } else {
-                    // Posts List
-                    ScrollView {
-                        LazyVStack(spacing: 0) {
-                            ForEach(viewModel.posts) { post in
-                                CollectionPostItemView(
-                                    post: post,
-                                    isLiked: viewModel.isLiked(postId: post.postId),
-                                    onLikeTapped: {
-                                        if let postId = post.postId {
-                                            viewModel.toggleLike(postId: postId)
-                                        }
+                }
+            }
+            .padding(.horizontal)
+            .padding(.top, 8)
+            .padding(.bottom, 8)
+            
+            if viewModel.isLoading {
+                Spacer()
+                ProgressView("Loading posts...")
+                    .foregroundColor(.appRed)
+                Spacer()
+            } else if viewModel.posts.isEmpty {
+                Spacer()
+                VStack {
+                    Image(systemName: "photo.on.rectangle")
+                        .font(.system(size: 50))
+                        .foregroundColor(.gray)
+                    Text("No posts yet")
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                .padding()
+                Spacer()
+            } else {
+                // Posts List
+                ScrollView(.vertical, showsIndicators: true) {
+                    VStack(spacing: 0) {
+                        ForEach(viewModel.posts) { post in
+                            CollectionPostItemView(
+                                post: post,
+                                isLiked: viewModel.isLiked(postId: post.postId),
+                                onLikeTapped: {
+                                    if let postId = post.postId {
+                                        viewModel.toggleLike(postId: postId)
                                     }
-                                )
-                            }
+                                }
+                            )
                         }
                     }
                 }
             }
-            .background(themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(red: 1.0, green: 0.984, blue: 0.996))
         }
-        .navigationViewStyle(StackNavigationViewStyle())
+        .background(themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(red: 1.0, green: 0.984, blue: 0.996))
+        .sheet(isPresented: $showingCreatePost) {
+            CreatePostView()
+        }
     }
 }
 
@@ -130,12 +145,22 @@ struct CollectionPostItemView: View {
                 CachedAsyncImage(url: imageUrl) { phase in
                     switch phase {
                     case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
+                        ZStack {
+                            // Fixed-size black background container
+                            Rectangle()
+                                .fill(Color.black)
+                                .frame(height: 280)
+                            
+                            // Image centered within the black container
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(maxHeight: 280)
+                        }
                     case .failure(_):
                         Rectangle()
                             .fill(Color.black)
+                            .frame(height: 280)
                             .overlay(
                                 Image(systemName: "photo")
                                     .foregroundColor(.white)
@@ -144,24 +169,26 @@ struct CollectionPostItemView: View {
                     case .empty:
                         Rectangle()
                             .fill(Color.black)
+                            .frame(height: 280)
                             .overlay(
                                 ProgressView()
                                     .foregroundColor(.white)
                             )
                     @unknown default:
-                        EmptyView()
+                        Rectangle()
+                            .fill(Color.black)
+                            .frame(height: 280)
                     }
                 } placeholder: {
                     Rectangle()
                         .fill(Color.black)
+                        .frame(height: 280)
                         .overlay(
                             ProgressView()
                                 .foregroundColor(.white)
                         )
                 }
-                .frame(maxHeight: 280)
                 .clipped()
-                .background(Color.black)
                 .cornerRadius(8)
                 .padding(.horizontal, 15)
                 .padding(.bottom, 10)

@@ -1,6 +1,5 @@
 import Foundation
 import Combine
-import SwiftUI
 
 class GamesViewModel: ObservableObject {
     @Published var games: [Game] = []
@@ -71,22 +70,38 @@ class GamesViewModel: ObservableObject {
         
         // First check local database
         let localGames = coreDataService.getAllGames()
-        print("🎮 Local games count: \(localGames.count)")
         
         if localGames.isEmpty {
             // No local data, fetch from API
-            print("🎮 No local games, fetching from API...")
             fetchGamesFromAPI()
         } else {
             // Use local data and sort by name
-            print("🎮 Using \(localGames.count) local games")
             let sortedGames = localGames.sorted { ($0.name ?? "") < ($1.name ?? "") }
             games = sortedGames
             filteredGames = sortedGames
-            isLoading = false
+            
+            // Preload first few images before showing the list
+            preloadGameImages(sortedGames.prefix(10))
         }
     }
     
+    private func preloadGameImages(_ games: ArraySlice<Game>) {
+        let group = DispatchGroup()
+        
+        for game in games {
+            guard let imageUrlString = game.backgroundImage,
+                  let imageUrl = URL(string: imageUrlString) else { continue }
+            
+            group.enter()
+            URLSession.shared.dataTask(with: imageUrl) { _, _, _ in
+                group.leave()
+            }.resume()
+        }
+        
+        group.notify(queue: .main) {
+            self.isLoading = false
+        }
+    }
     
     private func fetchGamesFromAPI() {
         rawgApiService.fetchNintendoGames { [weak self] result in
@@ -99,11 +114,9 @@ class GamesViewModel: ObservableObject {
                     self?.filteredGames = sortedGames
                     self?.coreDataService.saveGames(sortedGames)
                     self?.isLoading = false
-                    print("🎮 Successfully loaded \(fetchedGames.count) games from API, sorted by name")
                 case .failure(let error):
                     self?.errorMessage = "Failed to load games: \(error.localizedDescription)"
                     self?.isLoading = false
-                    print("❌ Failed to load games: \(error)")
                 }
             }
         }

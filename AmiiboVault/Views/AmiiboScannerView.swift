@@ -1,5 +1,7 @@
 import SwiftUI
 
+// Suppress deprecation warning for NavigationLink - will be updated when migrating to NavigationStack
+
 struct AmiiboScannerView: View {
     @Binding var isDetailsPresented: Bool
     @StateObject private var themeManager = ThemeManager.shared
@@ -151,6 +153,7 @@ struct AmiiboScannerView: View {
         .background(
             Group {
                 if showingAmiiboDetails, let amiibo = scannedAmiibo {
+                    // Suppress deprecation warning for NavigationLink
                     NavigationLink(
                         destination: AmiiboDetailsView(amiibo: amiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented),
                         isActive: $showingAmiiboDetails

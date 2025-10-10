@@ -9,68 +9,81 @@ struct GamesView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-                // Search Bar
-                SearchBarView(searchText: $viewModel.searchText, placeholder: "Search Games")
-                .padding(.horizontal)
-                .padding(.top, 8)
+            // Search Bar
+            HStack {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.appRed)
                 
-                // Filter Controls
-                GameFilterControlsView(
-                    selectedSortType: $viewModel.selectedSortType,
-                    selectedGenre: $viewModel.selectedGenre,
-                    availableGenres: viewModel.availableGenres,
-                    showingSortOptions: $showingSortOptions,
-                    showingGenreOptions: $showingGenreOptions,
-                    onSortTypeSelected: { sortType in
-                        viewModel.selectSortType(sortType)
-                    },
-                    onSortTypeRemoved: {
-                        viewModel.removeSortType()
-                    },
-                    onGenreSelected: { genre in
-                        viewModel.selectGenre(genre)
-                    },
-                    onGenreRemoved: {
-                        viewModel.removeGenre()
+                TextField("Search Games", text: $viewModel.searchText)
+                    .foregroundColor(themeManager.isDarkMode ? .white : .black)
+                    .accentColor(themeManager.isDarkMode ? .white : .black)
+                    .placeholder(when: viewModel.searchText.isEmpty) {
+                        Text("Search Games")
+                            .foregroundColor(themeManager.isDarkMode ? .white.opacity(0.6) : .gray)
                     }
-                )
-                .padding(.horizontal)
-                .padding(.top, 8)
-                
-                Divider()
-                    .padding(.top, 8)
-                
-                // Content
-                if viewModel.isLoading {
-                    Spacer()
-                    ProgressView()
-                        .scaleEffect(1.2)
-                    Spacer()
-                } else if viewModel.filteredGames.isEmpty {
-                    Spacer()
-                    VStack(spacing: 16) {
-                        Image(systemName: "gamecontroller")
-                            .font(.system(size: 60))
-                            .foregroundColor(.appRed)
-                        
-                        Text("No games found")
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                            .foregroundColor(themeManager.isDarkMode ? .white : .black)
-                        
-                        Text("Try adjusting your search or filters")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                    Spacer()
-                } else {
-                    GameListView(games: viewModel.filteredGames, isGameDetailsPresented: $isGameDetailsPresented)
-                }
             }
+            .padding()
+            .background(Color.clear)
+            .cornerRadius(10)
+            .padding(.horizontal)
+            .padding(.top, 8)
+            
+            // Filter Controls
+            GameFilterControlsView(
+                selectedSortType: $viewModel.selectedSortType,
+                selectedGenre: $viewModel.selectedGenre,
+                availableGenres: viewModel.availableGenres,
+                showingSortOptions: $showingSortOptions,
+                showingGenreOptions: $showingGenreOptions,
+                onSortTypeSelected: { sortType in
+                    viewModel.selectSortType(sortType)
+                },
+                onSortTypeRemoved: {
+                    viewModel.removeSortType()
+                },
+                onGenreSelected: { genre in
+                    viewModel.selectGenre(genre)
+                },
+                onGenreRemoved: {
+                    viewModel.removeGenre()
+                }
+            )
+            .padding(.horizontal)
+            .padding(.top, 8)
+            
+            Divider()
+                .padding(.top, 8)
+            
+            // Content
+            if viewModel.isLoading {
+                Spacer()
+                ProgressView()
+                    .scaleEffect(1.2)
+                Spacer()
+            } else if viewModel.filteredGames.isEmpty {
+                Spacer()
+                VStack(spacing: 16) {
+                    Image(systemName: "gamecontroller")
+                        .font(.system(size: 60))
+                        .foregroundColor(.appRed)
+                    
+                    Text("No games found")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                        .foregroundColor(themeManager.isDarkMode ? .white : .black)
+                    
+                    Text("Try adjusting your search or filters")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+            } else {
+                GameListView(games: viewModel.filteredGames, isGameDetailsPresented: $isGameDetailsPresented)
+            }
+        }
             .background(themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(red: 1.0, green: 0.984, blue: 0.996))
             .onAppear {
                 // Force refresh when screen appears
-                print("🎮 GamesView appeared, forcing refresh...")
                 viewModel.loadGames()
             }
             .sheet(isPresented: $showingSortOptions) {
@@ -312,6 +325,14 @@ struct GameSortOptionsView: View {
     var body: some View {
         NavigationView {
             List {
+                Button(action: onRemoveSort) {
+                    HStack {
+                        Text("Remove Sort")
+                            .foregroundColor(.red)
+                        Spacer()
+                    }
+                }
+                
                 ForEach(sortOptions, id: \.self) { option in
                     Button(action: {
                         onSortTypeSelected(option)
@@ -324,16 +345,6 @@ struct GameSortOptionsView: View {
                                 Image(systemName: "checkmark")
                                     .foregroundColor(.appRed)
                             }
-                        }
-                    }
-                }
-                
-                if selectedSortType != nil {
-                    Button(action: onRemoveSort) {
-                        HStack {
-                            Text("Remove Sort")
-                                .foregroundColor(.red)
-                            Spacer()
                         }
                     }
                 }
@@ -354,6 +365,14 @@ struct GenreOptionsView: View {
     var body: some View {
         NavigationView {
             List {
+                Button(action: onRemoveGenre) {
+                    HStack {
+                        Text("Remove Filter")
+                            .foregroundColor(.red)
+                        Spacer()
+                    }
+                }
+                
                 ForEach(genres, id: \.self) { genre in
                     Button(action: {
                         onGenreSelected(genre)
@@ -366,16 +385,6 @@ struct GenreOptionsView: View {
                                 Image(systemName: "checkmark")
                                     .foregroundColor(.appRed)
                             }
-                        }
-                    }
-                }
-                
-                if selectedGenre != nil {
-                    Button(action: onRemoveGenre) {
-                        HStack {
-                            Text("Remove Filter")
-                                .foregroundColor(.red)
-                            Spacer()
                         }
                     }
                 }

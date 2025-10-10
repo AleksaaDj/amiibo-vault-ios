@@ -70,12 +70,38 @@ class PostsViewModel: ObservableObject {
     }
     
     func toggleLike(postId: String) {
-        if likedPostIds.contains(postId) {
+        let isCurrentlyLiked = likedPostIds.contains(postId)
+        
+        // Update local state immediately for instant UI response
+        if isCurrentlyLiked {
             likedPostIds.removeAll { $0 == postId }
         } else {
             likedPostIds.append(postId)
         }
         saveLikedPosts()
+        
+        // Update local posts array immediately for instant UI update
+        if let index = posts.firstIndex(where: { $0.postId == postId }) {
+            let currentLikes = Int(posts[index].likes ?? "0") ?? 0
+            let newLikesCount = isCurrentlyLiked ? max(0, currentLikes - 1) : currentLikes + 1
+            
+            let updatedPost = CollectionPost(
+                postId: posts[index].postId,
+                likes: "\(newLikesCount)",
+                avatarId: posts[index].avatarId,
+                backgroundColor: posts[index].backgroundColor,
+                date: posts[index].date,
+                image: posts[index].image,
+                name: posts[index].name,
+                text: posts[index].text
+            )
+            posts[index] = updatedPost
+        }
+        
+        // Update Firebase in background (async)
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            self?.updateFirebasePostLikes(postId: postId, isLiked: !isCurrentlyLiked)
+        }
     }
     
     func isLiked(postId: String?) -> Bool {
@@ -91,5 +117,31 @@ class PostsViewModel: ObservableObject {
     
     private func saveLikedPosts() {
         userDefaults.set(likedPostIds, forKey: likedPostsKey)
+    }
+    
+    private func updateFirebasePostLikes(postId: String, isLiked: Bool) {
+        // Query Firebase to find the post with matching postId
+        database.child("SharedContent")
+            .queryOrdered(byChild: "postId")
+            .queryEqual(toValue: postId)
+            .observeSingleEvent(of: .value) { snapshot in
+                for child in snapshot.children {
+                    if let childSnapshot = child as? DataSnapshot,
+                       let postData = childSnapshot.value as? [String: Any] {
+                        
+                        // Get current likes count
+                        let currentLikes = postData["likes"] as? String ?? "0"
+                        let currentLikesInt = Int(currentLikes) ?? 0
+                        
+                        // Calculate new likes count
+                        let newLikesCount = isLiked ? currentLikesInt + 1 : max(0, currentLikesInt - 1)
+                        
+                        // Update the likes count in Firebase
+                        childSnapshot.ref.child("likes").setValue("\(newLikesCount)")
+                        
+                        break // Only update the first matching post
+                    }
+                }
+            }
     }
 }

@@ -13,6 +13,10 @@ struct ContentView: View {
                 // Background
                 (themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(red: 1.0, green: 0.984, blue: 0.996))
                     .ignoresSafeArea()
+                    .onTapGesture {
+                        // Dismiss keyboard when tapping anywhere on the main view
+                        dismissKeyboard()
+                    }
                 
                 // Main Content - Keep all views alive to preserve state
                 ZStack {
@@ -40,9 +44,9 @@ struct ContentView: View {
                 AmiiboScannerView(isDetailsPresented: $isDetailsPresented, viewModel: amiiboViewModel)
                     .opacity(selectedTab == 4 ? 1 : 0)
                     .allowsHitTesting(selectedTab == 4)
-            }
-            .padding(.bottom, (isDetailsPresented || isGameDetailsPresented) ? 0 : 90) // Add padding for custom navigation bar
-            .animation(.easeInOut(duration: 0.2), value: selectedTab)
+                }
+                .padding(.bottom, (isDetailsPresented || isGameDetailsPresented) ? 0 : 90) // Add padding for custom navigation bar
+                .animation(.easeInOut(duration: 0.2), value: selectedTab)
             
             // Custom Bottom Navigation Bar
             if !isDetailsPresented && !isGameDetailsPresented {

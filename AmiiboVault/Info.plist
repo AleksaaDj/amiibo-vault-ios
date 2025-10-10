@@ -10,5 +10,7 @@
 		<string>NDEF</string>
 		<string>ISO7816</string>
 	</array>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>This app needs access to save collection images to your Photos library.</string>
 </dict>
 </plist>

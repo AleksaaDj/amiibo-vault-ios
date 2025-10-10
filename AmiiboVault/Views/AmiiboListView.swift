@@ -1,5 +1,7 @@
 import SwiftUI
 
+// Suppress deprecation warning for NavigationLink - will be updated when migrating to NavigationStack
+
 extension View {
     func placeholder<Content: View>(
         when shouldShow: Bool,
@@ -17,6 +19,8 @@ struct AmiiboListView: View {
     @ObservedObject var viewModel: AmiiboListViewModel
     @State private var showingSortOptions = false
     @Binding var isDetailsPresented: Bool
+    @State private var selectedAmiiboForDetails: Amiibo? = nil
+    @State private var showingDetails = false
     @StateObject private var themeManager = ThemeManager.shared
     
     init(viewModel: AmiiboListViewModel = AmiiboListViewModel(), isDetailsPresented: Binding<Bool> = .constant(false)) {
@@ -26,23 +30,28 @@ struct AmiiboListView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Search Bar
+            // Search Bar - Fixed at top
             SearchBarView(searchText: $viewModel.searchText)
                 .padding(.horizontal)
                 .padding(.top, 7)
             
-            // Featured Amiibo Card
+            // Featured Amiibo Card - Fixed
             if let featuredAmiibo = viewModel.featuredAmiibo {
-                NavigationLink(destination: AmiiboDetailsView(amiibo: featuredAmiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)) {
-                    FeaturedAmiiboCard(featuredAmiibo: featuredAmiibo) { amiibo in
-                        // Navigation handled by NavigationLink
-                    }
+                Button(action: {
+                    // Dismiss keyboard properly
+                    dismissKeyboard()
+                    
+                    // Navigate immediately
+                    selectedAmiiboForDetails = featuredAmiibo
+                    showingDetails = true
+                }) {
+                    FeaturedAmiiboCard(featuredAmiibo: featuredAmiibo)
                 }
                 .buttonStyle(PlainButtonStyle())
                 .padding(.horizontal)
             }
             
-            // Filter and Sort Controls
+            // Filter and Sort Controls - Fixed
             FilterControlsView(
                 sortType: $viewModel.sortType,
                 showingSortOptions: $showingSortOptions,
@@ -60,7 +69,7 @@ struct AmiiboListView: View {
             Divider()
                 .padding(.vertical, 8)
             
-            // Content
+            // Content - Only this part scrolls
             if viewModel.isLoading {
                 Spacer()
                 ProgressView("Loading Amiibo...")
@@ -96,7 +105,7 @@ struct AmiiboListView: View {
                 .padding()
                 Spacer()
             } else {
-                // Amiibo List/Grid
+                // Amiibo List/Grid - Only this part is scrollable
                 if viewModel.isGridView {
                     ScrollView {
                         AmiiboGridView(amiiboList: viewModel.filteredAmiiboList, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)
@@ -111,23 +120,42 @@ struct AmiiboListView: View {
         }
         .background(themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(red: 1.0, green: 0.984, blue: 0.996))
         .onAppear {
-            print("🔄 AmiiboListView onAppear - loading featured Amiibo")
-            // Load featured Amiibo when view appears
-            viewModel.loadFeaturedAmiiboFromDatabase()
+            // Only load featured Amiibo if we don't have one already
+            if viewModel.featuredAmiibo == nil {
+                viewModel.loadFeaturedAmiiboFromDatabase()
+            } else {
+            }
         }
+        .background(
+            // Hidden NavigationLink that gets triggered by state
+            Group {
+                if let selectedAmiibo = selectedAmiiboForDetails {
+                    // Suppress deprecation warning for NavigationLink
+                    NavigationLink(
+                        destination: AmiiboDetailsView(amiibo: selectedAmiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented),
+                        isActive: $showingDetails
+                    ) {
+                        EmptyView()
+                    }
+                    .hidden()
+                }
+            }
+        )
         .sheet(isPresented: $showingSortOptions) {
             SortOptionsView(sortType: $viewModel.sortType, onSortChanged: { newSortType in
                 viewModel.setSortType(newSortType)
             })
         }
-        }
     }
+}
 
 // MARK: - Search Bar View
 struct SearchBarView: View {
     @Binding var searchText: String
     let placeholder: String
     @StateObject private var themeManager = ThemeManager.shared
+    @FocusState private var isTextFieldFocused: Bool
+    
     
     init(searchText: Binding<String>, placeholder: String = "Search Amiibo") {
         self._searchText = searchText
@@ -140,6 +168,7 @@ struct SearchBarView: View {
                 .foregroundColor(.appRed)
             
             TextField(placeholder, text: $searchText)
+                .focused($isTextFieldFocused)
                 .foregroundColor(themeManager.isDarkMode ? .white : .black)
                 .accentColor(themeManager.isDarkMode ? .white : .black)
                 .placeholder(when: searchText.isEmpty) {
@@ -150,6 +179,10 @@ struct SearchBarView: View {
         .padding()
         .background(Color.clear)
         .cornerRadius(10)
+        .onAppear {
+            // Dismiss focus when view appears (e.g., when returning from details)
+            isTextFieldFocused = false
+        }
     }
 }
 
