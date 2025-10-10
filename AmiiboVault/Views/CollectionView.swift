@@ -8,6 +8,8 @@ struct CollectionView: View {
     @State private var selectedType: String?
     @State private var selectedSet: String?
     @State private var selectedSort: String?
+    @State private var showingSupport = false
+    @StateObject private var adMobService = AdMobService.shared
     
     private let tabs = ["my collection", "wishlist"]
     
@@ -22,16 +24,28 @@ struct CollectionView: View {
                 
                 Spacer()
                 
-                Button(action: {
-                    themeManager.toggleTheme()
-                }) {
-                    Image(systemName: themeManager.isDarkMode ? "sun.max.fill" : "moon.fill")
-                        .font(.title2)
-                        .foregroundColor(.appRed)
+                HStack(spacing: 16) {
+                    // Theme Toggle Button
+                    Button(action: {
+                        themeManager.toggleTheme()
+                    }) {
+                        Image(systemName: themeManager.isDarkMode ? "sun.max.fill" : "moon.fill")
+                            .font(.title2)
+                            .foregroundColor(.appRed)
+                    }
+                    
+                    // Support Button
+                    Button(action: {
+                        showingSupport = true
+                    }) {
+                        Image(systemName: "heart.fill")
+                            .font(.title2)
+                            .foregroundColor(.appRed)
+                    }
                 }
             }
             .padding(.horizontal, 20)
-            .padding(.top, 8)
+            .padding(.top, 30)
             .padding(.bottom, 8)
             
             // Statistics Info Card
@@ -83,7 +97,8 @@ struct CollectionView: View {
                 selectedType: $selectedType,
                 selectedSet: $selectedSet,
                 selectedSort: $selectedSort,
-                viewModel: viewModel
+                viewModel: viewModel,
+                adMobService: adMobService
             )
             .padding(.horizontal, 20)
             .padding(.top, 10)
@@ -148,6 +163,21 @@ struct CollectionView: View {
             // Refresh collection and wishlist data when screen appears
             viewModel.refreshCollectionAndWishlist()
         }
+        .background(
+            // Hidden NavigationLink that gets triggered by state
+            Group {
+                if showingSupport {
+                    // Suppress deprecation warning for NavigationLink
+                    NavigationLink(
+                        destination: SupportView(),
+                        isActive: $showingSupport
+                    ) {
+                        EmptyView()
+                    }
+                    .hidden()
+                }
+            }
+        )
     }
     
     private var currentAmiiboList: [Amiibo] {
@@ -333,6 +363,7 @@ struct CollectionFilterControlsView: View {
     @Binding var selectedSet: String?
     @Binding var selectedSort: String?
     let viewModel: AmiiboListViewModel
+    let adMobService: AdMobService
     @State private var showingTypeOptions = false
     @State private var showingSetOptions = false
     @State private var showingSortOptions = false
@@ -431,8 +462,10 @@ struct CollectionFilterControlsView: View {
                 },
                 onConfirm: {
                     viewModel.createAndDownloadCompositeImage { success in
-                        if success {
-                            showingSuccessAlert = true
+                        DispatchQueue.main.async {
+                            if success {
+                                showingSuccessAlert = true
+                            }
                         }
                     }
                     showingImageDialog = false
@@ -442,6 +475,10 @@ struct CollectionFilterControlsView: View {
         .alert("Success!", isPresented: $showingSuccessAlert) {
             Button("OK") {
                 showingSuccessAlert = false
+                // Show interstitial ad after success dialog is dismissed
+                adMobService.showInterstitialAdImmediately {
+                    // Ad dismissed or not shown
+                }
             }
         } message: {
             Text("Your collection image has been successfully saved to your Photos library!")
@@ -592,66 +629,66 @@ struct CollectionImageDialog: View {
             VStack(spacing: 0) {
                 // Header with red background
                 VStack(spacing: 16) {
-                Text("Collection Image")
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundColor(.white)
-                    .padding(.top, 15)
-                    .padding(.bottom, 16)
-                
-                Text("The image will be generated using your current collection and will be saved to your local storage, making it easy for you to share with others or creating post in community collection!")
-                    .font(.system(size: 16, weight: .regular))
-                    .foregroundColor(.white)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 16)
-                
-                // Example Image
-                Image("composite_image_example")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .padding(.horizontal, 16)
-                    .padding(.top, 16)
-                
-                Text("Example image")
-                    .font(.system(size: 12, weight: .regular))
-                    .foregroundColor(.white)
-                    .padding(.top, 4)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                
-                // Buttons
-                HStack(spacing: 0) {
-                    Button(action: onDismiss) {
-                        Text("Dismiss")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(.white)
-                            .padding(8)
-                    }
+                    Text("Collection Image")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(.white)
+                        .padding(.top, 15)
+                        .padding(.bottom, 16)
                     
-                    Spacer()
+                    Text("The image will be generated using your current collection and will be saved to your local storage, making it easy for you to share with others or creating post in community collection!")
+                        .font(.system(size: 16, weight: .regular))
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 16)
                     
-                    Button(action: onConfirm) {
-                        Text("Create Image")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(.white)
-                            .padding(8)
+                    // Example Image
+                    Image("composite_image_example")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 16)
+                    
+                    Text("Example image")
+                        .font(.system(size: 12, weight: .regular))
+                        .foregroundColor(.white)
+                        .padding(.top, 4)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                    
+                    // Buttons
+                    HStack(spacing: 0) {
+                        Button(action: onDismiss) {
+                            Text("Dismiss")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(.white)
+                                .padding(8)
+                        }
+                        
+                        Spacer()
+                        
+                        Button(action: onConfirm) {
+                            Text("Create Image")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(.white)
+                                .padding(8)
+                        }
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 10)
+                    .padding(.bottom, 20)
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 10)
-                .padding(.bottom, 20)
-            }
-            .background(
-                RoundedRectangle(cornerRadius: 7)
-                    .fill(Color.appRed)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 7)
-                            .fill(Color.appRed)
-                            .mask(
-                                RoundedRectangle(cornerRadius: 7)
-                                    .offset(x: 20, y: 20)
-                                    .blur(radius: 10)
-                            )
-                    )
-            )
+                .background(
+                    RoundedRectangle(cornerRadius: 7)
+                        .fill(Color.appRed)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 7)
+                                .fill(Color.appRed)
+                                .mask(
+                                    RoundedRectangle(cornerRadius: 7)
+                                        .offset(x: 20, y: 20)
+                                        .blur(radius: 10)
+                                )
+                        )
+                )
             }
             .cornerRadius(7)
             .shadow(radius: 10)
@@ -659,9 +696,9 @@ struct CollectionImageDialog: View {
             .padding(.bottom, 50)
         }
     }
-}
-
-#Preview {
-    let viewModel = AmiiboListViewModel()
-    return CollectionView(viewModel: viewModel, isDetailsPresented: .constant(false))
+    
+    #Preview {
+        let viewModel = AmiiboListViewModel()
+        return CollectionView(viewModel: viewModel, isDetailsPresented: .constant(false))
+    }
 }

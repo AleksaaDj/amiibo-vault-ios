@@ -6,6 +6,7 @@ struct AmiiboScannerView: View {
     @Binding var isDetailsPresented: Bool
     @StateObject private var themeManager = ThemeManager.shared
     @StateObject private var nfcReader = NTAG215Reader()
+    @StateObject private var adMobService = AdMobService.shared
     @State private var animationScale: CGFloat = 1.0
     @State private var showingAmiiboDetails = false
     @State private var scannedAmiibo: Amiibo?
@@ -32,7 +33,7 @@ struct AmiiboScannerView: View {
                 Spacer()
             }
             .padding(.horizontal, 20)
-            .padding(.top, 8)
+            .padding(.top, 30)
             .padding(.bottom, 8)
             .background(themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(.systemBackground))
             
@@ -130,6 +131,11 @@ struct AmiiboScannerView: View {
                 }
                 
                 Spacer() // Push content up
+                
+                // Banner Ad at bottom
+                LargeBannerAdView(adUnitID: adMobService.getBannerAdUnitID())
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 20)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
@@ -140,6 +146,10 @@ struct AmiiboScannerView: View {
             }
         } message: {
             Text(nfcReader.errorMessage ?? "")
+        }
+        .onAppear {
+            // Set up the repository for the NFC reader
+            nfcReader.setRepository(amiiboRepository)
         }
         .onChange(of: nfcReader.scannedAmiibo) { amiibo in
             if let amiibo = amiibo {

@@ -9,6 +9,7 @@ struct AmiiboCompatibilityView: View {
     @State private var isLoading = true
     @State private var showError = false
     @StateObject private var themeManager = ThemeManager.shared
+    @StateObject private var adMobService = AdMobService.shared
     
     private let tabs = ["Switch", "3DS", "Wii U"]
     
@@ -89,6 +90,11 @@ struct AmiiboCompatibilityView: View {
                         ForEach(sampleGames(for: selectedTab), id: \.self) { game in
                             GameCompatibilityCard(game: game)
                         }
+                        
+                        // Banner Ad
+                        FullWidthBannerAdView(adUnitID: adMobService.getBannerAdUnitID())
+                            .padding(.horizontal, 20)
+                            .padding(.top, 20)
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 20)
@@ -98,6 +104,10 @@ struct AmiiboCompatibilityView: View {
         .background(themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(red: 1.0, green: 0.984, blue: 0.996))
         .onAppear {
             loadCompatibilityData()
+            // Show interstitial ad (every 3rd time)
+            adMobService.showInterstitialAd {
+                // Ad dismissed or not shown
+            }
         }
     }
     

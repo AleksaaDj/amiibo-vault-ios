@@ -8,6 +8,7 @@ struct AmiiboDetailsView: View {
     @State private var showingSeriesView = false
     @State private var showingCompatibilityView = false
     @StateObject private var themeManager = ThemeManager.shared
+    @StateObject private var adMobService = AdMobService.shared
     
     // Get the updated amiibo data from the view model
     private var currentAmiibo: Amiibo {
@@ -202,6 +203,12 @@ struct AmiiboDetailsView: View {
         }
         .fullScreenCover(isPresented: $showingCompatibilityView) {
             AmiiboCompatibilityView(amiibo: currentAmiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)
+        }
+        .onAppear {
+            // Show interstitial ad (every 3rd time)
+            adMobService.showInterstitialAd {
+                // Ad dismissed or not shown
+            }
         }
     }
     

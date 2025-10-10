@@ -20,6 +20,7 @@
 		0147B69B2E96F3D20037DE10 /* FirebaseRemoteConfig in Frameworks */ = {isa = PBXBuildFile; productRef = 0147B69A2E96F3D20037DE10 /* FirebaseRemoteConfig */; };
 		0147B69D2E96F3D20037DE10 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 0147B69C2E96F3D20037DE10 /* FirebaseStorage */; };
 		0147B69F2E96F3D20037DE10 /* FirebaseStorageCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = 0147B69E2E96F3D20037DE10 /* FirebaseStorageCombine-Community */; };
+		01D3F20F2E998A4D00BCA5D4 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = 01D3F20E2E998A4D00BCA5D4 /* GoogleMobileAds */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -87,6 +88,7 @@
 				0147B69F2E96F3D20037DE10 /* FirebaseStorageCombine-Community in Frameworks */,
 				0147B6992E96F3D20037DE10 /* FirebasePerformance in Frameworks */,
 				0147B6832E96F16E0037DE10 /* FirebaseAnalytics in Frameworks */,
+				01D3F20F2E998A4D00BCA5D4 /* GoogleMobileAds in Frameworks */,
 				0147B69D2E96F3D20037DE10 /* FirebaseStorage in Frameworks */,
 				0147B6852E96F16E0037DE10 /* FirebaseAnalyticsCore in Frameworks */,
 				0147B6932E96F3D20037DE10 /* FirebaseCrashlytics in Frameworks */,
@@ -167,6 +169,7 @@
 				0147B69A2E96F3D20037DE10 /* FirebaseRemoteConfig */,
 				0147B69C2E96F3D20037DE10 /* FirebaseStorage */,
 				0147B69E2E96F3D20037DE10 /* FirebaseStorageCombine-Community */,
+				01D3F20E2E998A4D00BCA5D4 /* GoogleMobileAds */,
 			);
 			productName = AmiiboVault;
 			productReference = 012D9DBF2E9683D900C77CE1 /* AmiiboVault.app */;
@@ -252,6 +255,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				0147B67F2E96F16E0037DE10 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				01D3F20D2E998A4D00BCA5D4 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 012D9DC02E9683D900C77CE1 /* Products */;
@@ -652,6 +656,14 @@
 				minimumVersion = 12.4.0;
 			};
 		};
+		01D3F20D2E998A4D00BCA5D4 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.12.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -719,6 +731,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0147B67F2E96F16E0037DE10 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = "FirebaseStorageCombine-Community";
+		};
+		01D3F20E2E998A4D00BCA5D4 /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 01D3F20D2E998A4D00BCA5D4 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

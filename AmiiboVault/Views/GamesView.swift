@@ -26,7 +26,7 @@ struct GamesView: View {
             .background(Color.clear)
             .cornerRadius(10)
             .padding(.horizontal)
-            .padding(.top, 8)
+            .padding(.top, 20)
             
             // Filter Controls
             GameFilterControlsView(

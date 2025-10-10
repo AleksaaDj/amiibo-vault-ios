@@ -44,6 +44,7 @@ struct ImagePicker: UIViewControllerRepresentable {
 struct CreatePostView: View {
     @StateObject private var viewModel = CreatePostViewModel()
     @StateObject private var themeManager = ThemeManager.shared
+    @StateObject private var adMobService = AdMobService.shared
     @Environment(\.dismiss) private var dismiss
     @State private var selectedItem: PhotosPickerItem? = nil
     @State private var showingImagePicker = false
@@ -66,6 +67,10 @@ struct CreatePostView: View {
                     
                     // Publish Button
                     publishButton
+                    
+                    // Banner Ad
+                    LargeBannerAdView(adUnitID: adMobService.getBannerAdUnitID())
+                        .padding(.top, 20)
                 }
                 .padding()
             }
@@ -80,7 +85,8 @@ struct CreatePostView: View {
                 }
             }
         }
-        .background(themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(red: 1.0, green: 0.984, blue: 0.996))
+        .background(Color(.systemBackground))
+        .preferredColorScheme(themeManager.isDarkMode ? .dark : .light)
         .onChange(of: selectedItem) { newItem in
             if #available(iOS 16.0, *) {
                 Task {
