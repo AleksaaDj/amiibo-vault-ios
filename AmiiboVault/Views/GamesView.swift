@@ -26,7 +26,6 @@ struct GamesView: View {
             .background(Color.clear)
             .cornerRadius(10)
             .padding(.horizontal)
-            .padding(.top, 20)
             
             // Filter Controls
             GameFilterControlsView(
@@ -134,6 +133,7 @@ struct GameListView: View {
             }
             .padding(.horizontal)
             .padding(.top, 8)
+            .padding(.bottom, 100) // Add bottom padding for custom navigation bar
         }
     }
 }

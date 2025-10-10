@@ -30,7 +30,6 @@ struct PostsView: View {
                 }
             }
             .padding(.horizontal)
-            .padding(.top, 30)
             .padding(.bottom, 8)
             
             if viewModel.isLoading {

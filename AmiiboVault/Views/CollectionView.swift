@@ -45,7 +45,6 @@ struct CollectionView: View {
                 }
             }
             .padding(.horizontal, 20)
-            .padding(.top, 30)
             .padding(.bottom, 8)
             
             // Statistics Info Card

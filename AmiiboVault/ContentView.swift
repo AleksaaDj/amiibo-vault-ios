@@ -45,7 +45,6 @@ struct ContentView: View {
                     .opacity(selectedTab == 4 ? 1 : 0)
                     .allowsHitTesting(selectedTab == 4)
                 }
-                .padding(.bottom, (isDetailsPresented || isGameDetailsPresented) ? 0 : 90) // Add padding for custom navigation bar
                 .animation(.easeInOut(duration: 0.2), value: selectedTab)
             
             // Custom Bottom Navigation Bar

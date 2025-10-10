@@ -33,7 +33,6 @@ struct AmiiboListView: View {
             // Search Bar - Fixed at top
             SearchBarView(searchText: $viewModel.searchText)
                 .padding(.horizontal)
-                .padding(.top, 20)
             
             // Featured Amiibo Card - Fixed
             if let featuredAmiibo = viewModel.featuredAmiibo {

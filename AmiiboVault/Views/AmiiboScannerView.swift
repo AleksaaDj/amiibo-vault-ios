@@ -33,14 +33,13 @@ struct AmiiboScannerView: View {
                 Spacer()
             }
             .padding(.horizontal, 20)
-            .padding(.top, 30)
             .padding(.bottom, 8)
             .background(themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(.systemBackground))
             
             // Main Content
-            VStack(spacing: 20) {
+            VStack(spacing: 15) {
                 Spacer()
-                    .frame(height: 80) // Reduced space to lower icon slightly
+                    .frame(height: 60) // Further reduced space to push content up
                 
                 // Radar animation with fixed center - smaller radius, closer to icon
                 ZStack {
@@ -94,7 +93,7 @@ struct AmiiboScannerView: View {
                     .multilineTextAlignment(.center)
                     .lineSpacing(4)
                     .padding(.horizontal, 40)
-                    .padding(.top, 40)
+                    .padding(.top, 20) // Reduced padding to bring text closer
                 
                 
                 // Scan Button
@@ -135,7 +134,7 @@ struct AmiiboScannerView: View {
                 // Banner Ad at bottom
                 LargeBannerAdView(adUnitID: adMobService.getBannerAdUnitID())
                     .padding(.horizontal, 20)
-                    .padding(.bottom, 20)
+                    .padding(.bottom, 120) // Increased padding to clear navigation bar
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }

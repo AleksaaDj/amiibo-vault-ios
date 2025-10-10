@@ -81,8 +81,8 @@ class CompositeImageHelper {
                 let backgroundRect = CGRect(x: 0, y: 0, width: targetWidth, height: targetHeight)
                 backgroundImage.draw(in: backgroundRect)
             } else {
-                // Fallback to black background if image not found
-                cgContext.setFillColor(UIColor.black.cgColor)
+                // Fallback to white background if image not found (matching Android)
+                cgContext.setFillColor(UIColor.white.cgColor)
                 cgContext.fill(CGRect(x: 0, y: 0, width: targetWidth, height: targetHeight))
             }
             
