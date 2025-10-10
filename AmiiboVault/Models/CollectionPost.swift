@@ -16,3 +16,4 @@ struct CollectionPost: Codable, Identifiable {
     }
 }
 
+
