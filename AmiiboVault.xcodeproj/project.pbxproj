@@ -1,0 +1,726 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0147B6812E96F16E0037DE10 /* FirebaseAI in Frameworks */ = {isa = PBXBuildFile; productRef = 0147B6802E96F16E0037DE10 /* FirebaseAI */; };
+		0147B6832E96F16E0037DE10 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 0147B6822E96F16E0037DE10 /* FirebaseAnalytics */; };
+		0147B6852E96F16E0037DE10 /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = 0147B6842E96F16E0037DE10 /* FirebaseAnalyticsCore */; };
+		0147B6872E96F16E0037DE10 /* FirebaseAnalyticsIdentitySupport in Frameworks */ = {isa = PBXBuildFile; productRef = 0147B6862E96F16E0037DE10 /* FirebaseAnalyticsIdentitySupport */; };
+		0147B6892E96F16E0037DE10 /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = 0147B6882E96F16E0037DE10 /* FirebaseAppCheck */; };
+		0147B6912E96F3D20037DE10 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 0147B6902E96F3D20037DE10 /* FirebaseCore */; };
+		0147B6932E96F3D20037DE10 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 0147B6922E96F3D20037DE10 /* FirebaseCrashlytics */; };
+		0147B6952E96F3D20037DE10 /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 0147B6942E96F3D20037DE10 /* FirebaseDatabase */; };
+		0147B6972E96F3D20037DE10 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 0147B6962E96F3D20037DE10 /* FirebaseMessaging */; };
+		0147B6992E96F3D20037DE10 /* FirebasePerformance in Frameworks */ = {isa = PBXBuildFile; productRef = 0147B6982E96F3D20037DE10 /* FirebasePerformance */; };
+		0147B69B2E96F3D20037DE10 /* FirebaseRemoteConfig in Frameworks */ = {isa = PBXBuildFile; productRef = 0147B69A2E96F3D20037DE10 /* FirebaseRemoteConfig */; };
+		0147B69D2E96F3D20037DE10 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 0147B69C2E96F3D20037DE10 /* FirebaseStorage */; };
+		0147B69F2E96F3D20037DE10 /* FirebaseStorageCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = 0147B69E2E96F3D20037DE10 /* FirebaseStorageCombine-Community */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		012D9DD22E9683DA00C77CE1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 012D9DB72E9683D900C77CE1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 012D9DBE2E9683D900C77CE1;
+			remoteInfo = AmiiboVault;
+		};
+		012D9DDC2E9683DA00C77CE1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 012D9DB72E9683D900C77CE1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 012D9DBE2E9683D900C77CE1;
+			remoteInfo = AmiiboVault;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		012D9DBF2E9683D900C77CE1 /* AmiiboVault.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AmiiboVault.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		012D9DD12E9683DA00C77CE1 /* AmiiboVaultTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AmiiboVaultTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		012D9DDB2E9683DA00C77CE1 /* AmiiboVaultUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AmiiboVaultUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		012D9E082E968BD600C77CE1 /* Exceptions for "AmiiboVault" folder in "AmiiboVault" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 012D9DBE2E9683D900C77CE1 /* AmiiboVault */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		012D9DC12E9683D900C77CE1 /* AmiiboVault */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				012D9E082E968BD600C77CE1 /* Exceptions for "AmiiboVault" folder in "AmiiboVault" target */,
+			);
+			path = AmiiboVault;
+			sourceTree = "<group>";
+		};
+		012D9DD42E9683DA00C77CE1 /* AmiiboVaultTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = AmiiboVaultTests;
+			sourceTree = "<group>";
+		};
+		012D9DDE2E9683DA00C77CE1 /* AmiiboVaultUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = AmiiboVaultUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		012D9DBC2E9683D900C77CE1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0147B69B2E96F3D20037DE10 /* FirebaseRemoteConfig in Frameworks */,
+				0147B6972E96F3D20037DE10 /* FirebaseMessaging in Frameworks */,
+				0147B6872E96F16E0037DE10 /* FirebaseAnalyticsIdentitySupport in Frameworks */,
+				0147B69F2E96F3D20037DE10 /* FirebaseStorageCombine-Community in Frameworks */,
+				0147B6992E96F3D20037DE10 /* FirebasePerformance in Frameworks */,
+				0147B6832E96F16E0037DE10 /* FirebaseAnalytics in Frameworks */,
+				0147B69D2E96F3D20037DE10 /* FirebaseStorage in Frameworks */,
+				0147B6852E96F16E0037DE10 /* FirebaseAnalyticsCore in Frameworks */,
+				0147B6932E96F3D20037DE10 /* FirebaseCrashlytics in Frameworks */,
+				0147B6892E96F16E0037DE10 /* FirebaseAppCheck in Frameworks */,
+				0147B6912E96F3D20037DE10 /* FirebaseCore in Frameworks */,
+				0147B6952E96F3D20037DE10 /* FirebaseDatabase in Frameworks */,
+				0147B6812E96F16E0037DE10 /* FirebaseAI in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		012D9DCE2E9683DA00C77CE1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		012D9DD82E9683DA00C77CE1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		012D9DB62E9683D900C77CE1 = {
+			isa = PBXGroup;
+			children = (
+				012D9DC12E9683D900C77CE1 /* AmiiboVault */,
+				012D9DD42E9683DA00C77CE1 /* AmiiboVaultTests */,
+				012D9DDE2E9683DA00C77CE1 /* AmiiboVaultUITests */,
+				012D9DC02E9683D900C77CE1 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		012D9DC02E9683D900C77CE1 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				012D9DBF2E9683D900C77CE1 /* AmiiboVault.app */,
+				012D9DD12E9683DA00C77CE1 /* AmiiboVaultTests.xctest */,
+				012D9DDB2E9683DA00C77CE1 /* AmiiboVaultUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		012D9DBE2E9683D900C77CE1 /* AmiiboVault */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 012D9DE52E9683DA00C77CE1 /* Build configuration list for PBXNativeTarget "AmiiboVault" */;
+			buildPhases = (
+				012D9DBB2E9683D900C77CE1 /* Sources */,
+				012D9DBC2E9683D900C77CE1 /* Frameworks */,
+				012D9DBD2E9683D900C77CE1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				012D9DC12E9683D900C77CE1 /* AmiiboVault */,
+			);
+			name = AmiiboVault;
+			packageProductDependencies = (
+				0147B6802E96F16E0037DE10 /* FirebaseAI */,
+				0147B6822E96F16E0037DE10 /* FirebaseAnalytics */,
+				0147B6842E96F16E0037DE10 /* FirebaseAnalyticsCore */,
+				0147B6862E96F16E0037DE10 /* FirebaseAnalyticsIdentitySupport */,
+				0147B6882E96F16E0037DE10 /* FirebaseAppCheck */,
+				0147B6902E96F3D20037DE10 /* FirebaseCore */,
+				0147B6922E96F3D20037DE10 /* FirebaseCrashlytics */,
+				0147B6942E96F3D20037DE10 /* FirebaseDatabase */,
+				0147B6962E96F3D20037DE10 /* FirebaseMessaging */,
+				0147B6982E96F3D20037DE10 /* FirebasePerformance */,
+				0147B69A2E96F3D20037DE10 /* FirebaseRemoteConfig */,
+				0147B69C2E96F3D20037DE10 /* FirebaseStorage */,
+				0147B69E2E96F3D20037DE10 /* FirebaseStorageCombine-Community */,
+			);
+			productName = AmiiboVault;
+			productReference = 012D9DBF2E9683D900C77CE1 /* AmiiboVault.app */;
+			productType = "com.apple.product-type.application";
+		};
+		012D9DD02E9683DA00C77CE1 /* AmiiboVaultTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 012D9DE82E9683DA00C77CE1 /* Build configuration list for PBXNativeTarget "AmiiboVaultTests" */;
+			buildPhases = (
+				012D9DCD2E9683DA00C77CE1 /* Sources */,
+				012D9DCE2E9683DA00C77CE1 /* Frameworks */,
+				012D9DCF2E9683DA00C77CE1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				012D9DD32E9683DA00C77CE1 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				012D9DD42E9683DA00C77CE1 /* AmiiboVaultTests */,
+			);
+			name = AmiiboVaultTests;
+			packageProductDependencies = (
+			);
+			productName = AmiiboVaultTests;
+			productReference = 012D9DD12E9683DA00C77CE1 /* AmiiboVaultTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		012D9DDA2E9683DA00C77CE1 /* AmiiboVaultUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 012D9DEB2E9683DA00C77CE1 /* Build configuration list for PBXNativeTarget "AmiiboVaultUITests" */;
+			buildPhases = (
+				012D9DD72E9683DA00C77CE1 /* Sources */,
+				012D9DD82E9683DA00C77CE1 /* Frameworks */,
+				012D9DD92E9683DA00C77CE1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				012D9DDD2E9683DA00C77CE1 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				012D9DDE2E9683DA00C77CE1 /* AmiiboVaultUITests */,
+			);
+			name = AmiiboVaultUITests;
+			packageProductDependencies = (
+			);
+			productName = AmiiboVaultUITests;
+			productReference = 012D9DDB2E9683DA00C77CE1 /* AmiiboVaultUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		012D9DB72E9683D900C77CE1 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2600;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+					012D9DBE2E9683D900C77CE1 = {
+						CreatedOnToolsVersion = 26.0.1;
+					};
+					012D9DD02E9683DA00C77CE1 = {
+						CreatedOnToolsVersion = 26.0.1;
+						TestTargetID = 012D9DBE2E9683D900C77CE1;
+					};
+					012D9DDA2E9683DA00C77CE1 = {
+						CreatedOnToolsVersion = 26.0.1;
+						TestTargetID = 012D9DBE2E9683D900C77CE1;
+					};
+				};
+			};
+			buildConfigurationList = 012D9DBA2E9683D900C77CE1 /* Build configuration list for PBXProject "AmiiboVault" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 012D9DB62E9683D900C77CE1;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				0147B67F2E96F16E0037DE10 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 012D9DC02E9683D900C77CE1 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				012D9DBE2E9683D900C77CE1 /* AmiiboVault */,
+				012D9DD02E9683DA00C77CE1 /* AmiiboVaultTests */,
+				012D9DDA2E9683DA00C77CE1 /* AmiiboVaultUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		012D9DBD2E9683D900C77CE1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		012D9DCF2E9683DA00C77CE1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		012D9DD92E9683DA00C77CE1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		012D9DBB2E9683D900C77CE1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		012D9DCD2E9683DA00C77CE1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		012D9DD72E9683DA00C77CE1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		012D9DD32E9683DA00C77CE1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 012D9DBE2E9683D900C77CE1 /* AmiiboVault */;
+			targetProxy = 012D9DD22E9683DA00C77CE1 /* PBXContainerItemProxy */;
+		};
+		012D9DDD2E9683DA00C77CE1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 012D9DBE2E9683D900C77CE1 /* AmiiboVault */;
+			targetProxy = 012D9DDC2E9683DA00C77CE1 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		012D9DE32E9683DA00C77CE1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		012D9DE42E9683DA00C77CE1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		012D9DE62E9683DA00C77CE1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				"CODE_SIGN_ENTITLEMENTS[sdk=*]" = AmiiboVault/AmiiboVault.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = LS533FHM89;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AmiiboVault/Info.plist;
+				INFOPLIST_KEY_NFCReaderUsageDescription = "This app uses NFC to scan Amiibo figures and read their data.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.softwavegamess.AmiiboVaultIos;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		012D9DE72E9683DA00C77CE1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				"CODE_SIGN_ENTITLEMENTS[sdk=*]" = AmiiboVault/AmiiboVault.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = LS533FHM89;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AmiiboVault/Info.plist;
+				INFOPLIST_KEY_NFCReaderUsageDescription = "This app uses NFC to scan Amiibo figures and read their data.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.softwavegamess.AmiiboVaultIos;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		012D9DE92E9683DA00C77CE1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.softwavegamess.AmiiboVaultTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AmiiboVault.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/AmiiboVault";
+			};
+			name = Debug;
+		};
+		012D9DEA2E9683DA00C77CE1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.softwavegamess.AmiiboVaultTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AmiiboVault.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/AmiiboVault";
+			};
+			name = Release;
+		};
+		012D9DEC2E9683DA00C77CE1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.softwavegamess.AmiiboVaultUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = AmiiboVault;
+			};
+			name = Debug;
+		};
+		012D9DED2E9683DA00C77CE1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.softwavegamess.AmiiboVaultUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = AmiiboVault;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		012D9DBA2E9683D900C77CE1 /* Build configuration list for PBXProject "AmiiboVault" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				012D9DE32E9683DA00C77CE1 /* Debug */,
+				012D9DE42E9683DA00C77CE1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		012D9DE52E9683DA00C77CE1 /* Build configuration list for PBXNativeTarget "AmiiboVault" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				012D9DE62E9683DA00C77CE1 /* Debug */,
+				012D9DE72E9683DA00C77CE1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		012D9DE82E9683DA00C77CE1 /* Build configuration list for PBXNativeTarget "AmiiboVaultTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				012D9DE92E9683DA00C77CE1 /* Debug */,
+				012D9DEA2E9683DA00C77CE1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		012D9DEB2E9683DA00C77CE1 /* Build configuration list for PBXNativeTarget "AmiiboVaultUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				012D9DEC2E9683DA00C77CE1 /* Debug */,
+				012D9DED2E9683DA00C77CE1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		0147B67F2E96F16E0037DE10 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.4.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		0147B6802E96F16E0037DE10 /* FirebaseAI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0147B67F2E96F16E0037DE10 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAI;
+		};
+		0147B6822E96F16E0037DE10 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0147B67F2E96F16E0037DE10 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		0147B6842E96F16E0037DE10 /* FirebaseAnalyticsCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0147B67F2E96F16E0037DE10 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalyticsCore;
+		};
+		0147B6862E96F16E0037DE10 /* FirebaseAnalyticsIdentitySupport */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0147B67F2E96F16E0037DE10 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalyticsIdentitySupport;
+		};
+		0147B6882E96F16E0037DE10 /* FirebaseAppCheck */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0147B67F2E96F16E0037DE10 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAppCheck;
+		};
+		0147B6902E96F3D20037DE10 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0147B67F2E96F16E0037DE10 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		0147B6922E96F3D20037DE10 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0147B67F2E96F16E0037DE10 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
+		};
+		0147B6942E96F3D20037DE10 /* FirebaseDatabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0147B67F2E96F16E0037DE10 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseDatabase;
+		};
+		0147B6962E96F3D20037DE10 /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0147B67F2E96F16E0037DE10 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
+		};
+		0147B6982E96F3D20037DE10 /* FirebasePerformance */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0147B67F2E96F16E0037DE10 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebasePerformance;
+		};
+		0147B69A2E96F3D20037DE10 /* FirebaseRemoteConfig */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0147B67F2E96F16E0037DE10 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseRemoteConfig;
+		};
+		0147B69C2E96F3D20037DE10 /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0147B67F2E96F16E0037DE10 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
+		0147B69E2E96F3D20037DE10 /* FirebaseStorageCombine-Community */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0147B67F2E96F16E0037DE10 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = "FirebaseStorageCombine-Community";
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 012D9DB72E9683D900C77CE1 /* Project object */;
+}
