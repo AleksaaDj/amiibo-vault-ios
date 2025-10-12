@@ -119,11 +119,8 @@ struct AmiiboListView: View {
         }
         .background(themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(red: 1.0, green: 0.984, blue: 0.996))
         .onAppear {
-            // Only load featured Amiibo if we don't have one already
-            if viewModel.featuredAmiibo == nil {
-                viewModel.loadFeaturedAmiiboFromDatabase()
-            } else {
-            }
+            // Always try to load featured Amiibo on appear
+            viewModel.loadFeaturedAmiiboFromDatabase()
         }
         .background(
             // Hidden NavigationLink that gets triggered by state

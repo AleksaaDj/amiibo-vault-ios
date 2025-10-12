@@ -27,7 +27,6 @@ struct AmiiboListContent: View {
             }
         }
         .padding(.horizontal)
-        .padding(.bottom, 100) // Add bottom padding for custom navigation bar
         .background(
             // Hidden NavigationLink that gets triggered by state
             Group {
@@ -77,7 +76,6 @@ struct AmiiboGridView: View {
             }
         }
         .padding(.horizontal)
-        .padding(.bottom, 100) // Add bottom padding for custom navigation bar
         .background(
             // Hidden NavigationLink that gets triggered by state
             Group {

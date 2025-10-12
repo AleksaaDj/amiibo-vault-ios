@@ -133,7 +133,6 @@ struct GameListView: View {
             }
             .padding(.horizontal)
             .padding(.top, 8)
-            .padding(.bottom, 100) // Add bottom padding for custom navigation bar
         }
     }
 }

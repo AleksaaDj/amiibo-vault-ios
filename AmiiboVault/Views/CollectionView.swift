@@ -158,25 +158,14 @@ struct CollectionView: View {
                 }
             }
         }
+        .background(themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(red: 1.0, green: 0.984, blue: 0.996))
         .onAppear {
             // Refresh collection and wishlist data when screen appears
             viewModel.refreshCollectionAndWishlist()
         }
-        .background(
-            // Hidden NavigationLink that gets triggered by state
-            Group {
-                if showingSupport {
-                    // Suppress deprecation warning for NavigationLink
-                    NavigationLink(
-                        destination: SupportView(),
-                        isActive: $showingSupport
-                    ) {
-                        EmptyView()
-                    }
-                    .hidden()
-                }
-            }
-        )
+        .sheet(isPresented: $showingSupport) {
+            SupportView()
+        }
     }
     
     private var currentAmiiboList: [Amiibo] {

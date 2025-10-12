@@ -95,8 +95,17 @@ class AmiiboListViewModel: ObservableObject {
         // Load featured Amiibo from API on every start (changes frequently)
         if !hasCheckedAPI {
             hasCheckedAPI = true
-            loadFeaturedAmiiboFromAPI()
             syncWithAPIInBackground(localCount: localAmiibos.count)
+            
+            // If we have local data, load featured Amiibo immediately
+            if localAmiibos.count > 0 {
+                loadFeaturedAmiiboFromAPI()
+            } else {
+                // If no local data, delay featured Amiibo loading until after API sync
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                    self.loadFeaturedAmiiboFromAPI()
+                }
+            }
         }
     }
     
@@ -138,6 +147,11 @@ class AmiiboListViewModel: ObservableObject {
                     }
                     
                     self?.saveToDatabase(response.amiibo)
+                    
+                    // Load featured Amiibo after database is populated
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        self?.loadFeaturedAmiiboFromAPI()
+                    }
                 }
             )
             .store(in: &cancellables)
@@ -151,6 +165,8 @@ class AmiiboListViewModel: ObservableObject {
                 case .success(let firebaseData):
                     // Search for the Amiibo in our local database by tail
                     if let localAmiibo = self?.amiiboList.first(where: { $0.tail == firebaseData.tail }) {
+                        // Set as featured in database and update UI
+                        self?.coreDataService.setFeaturedAmiibo(amiibo: localAmiibo, featured: true, color: 0)
                         self?.featuredAmiibo = localAmiibo
                     } else {
                         // Fallback to database if not found locally
@@ -223,6 +239,11 @@ class AmiiboListViewModel: ObservableObject {
         
         // Update collection and wishlist
         loadCollectionAndWishlist()
+        
+        // Load featured Amiibo if we don't have one yet
+        if featuredAmiibo == nil {
+            loadFeaturedAmiiboFromAPI()
+        }
     }
     
     private func saveToDatabase(_ amiibos: [Amiibo]) {
@@ -232,6 +253,11 @@ class AmiiboListViewModel: ObservableObject {
         let updatedAmiibos = coreDataService.getAllAmiibos(sortType: sortType)
         amiiboList = updatedAmiibos
         filteredAmiiboList = updatedAmiibos
+        
+        // Load featured Amiibo if we don't have one yet
+        if featuredAmiibo == nil {
+            loadFeaturedAmiiboFromAPI()
+        }
     }
     
     // MARK: - Search and Filtering (Database-Based)

@@ -120,21 +120,12 @@ struct AmiiboScannerView: View {
                 }
                 .padding(.top, 20)
                 
-                // Scanning Status
-                if nfcReader.isScanning {
-                    Text("Scanning for Amiibo...\nHold your iPhone near an Amiibo")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(themeManager.isDarkMode ? .white.opacity(0.8) : .black.opacity(0.7))
-                        .multilineTextAlignment(.center)
-                        .padding(.top, 10)
-                }
-                
                 Spacer() // Push content up
                 
                 // Banner Ad at bottom
                 LargeBannerAdView(adUnitID: adMobService.getBannerAdUnitID())
                     .padding(.horizontal, 20)
-                    .padding(.bottom, 120) // Increased padding to clear navigation bar
+                    .padding(.bottom, 20) // Reduced padding for system tab bar
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
