@@ -10,6 +10,7 @@ struct CollectionView: View {
     @State private var selectedSort: String?
     @State private var showingSupport = false
     @StateObject private var adMobService = AdMobService.shared
+    @StateObject private var orientationManager = OrientationManager()
     
     private let tabs = ["my collection", "wishlist"]
     
@@ -47,24 +48,24 @@ struct CollectionView: View {
             .padding(.horizontal, 20)
             .padding(.bottom, 8)
             
-            // Statistics Info Card
-            StatisticsInfoCard(
-                selectedTab: selectedTab,
-                collectionCount: currentAmiiboList.count,
-                worldwideCount: getWorldwideCountForCurrentFilters(),
-                isDarkMode: themeManager.isDarkMode
-            )
-            .padding(.horizontal, 20)
-            .padding(.top, 20)
+            // Statistics Info Card (hidden in landscape mode to save space)
+            if !orientationManager.isLandscape {
+                StatisticsInfoCard(
+                    selectedTab: selectedTab,
+                    collectionCount: currentAmiiboList.count,
+                    worldwideCount: getWorldwideCountForCurrentFilters(),
+                    isDarkMode: themeManager.isDarkMode
+                )
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
+            }
             
             // Tab Selector
             HStack(spacing: 8) {
                 ForEach(0..<tabs.count, id: \.self) { index in
                     Button(action: {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            selectedTab = index
-                            clearFilters()
-                        }
+                        selectedTab = index
+                        clearFilters()
                     }) {
                         Text(tabs[index])
                             .font(.system(size: 12, weight: .semibold))
@@ -96,6 +97,7 @@ struct CollectionView: View {
                 selectedType: $selectedType,
                 selectedSet: $selectedSet,
                 selectedSort: $selectedSort,
+                selectedTab: $selectedTab,
                 viewModel: viewModel,
                 adMobService: adMobService
             )
@@ -148,7 +150,7 @@ struct CollectionView: View {
                         GridItem(.flexible()),
                         GridItem(.flexible()),
                         GridItem(.flexible())
-                    ], spacing: 20) {
+                    ], spacing: 12) {
                         ForEach(currentAmiiboList) { amiibo in
                             CollectionGridItem(amiibo: amiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)
                         }
@@ -297,41 +299,8 @@ struct CollectionGridItem: View {
     var body: some View {
         NavigationLink(destination: AmiiboDetailsView(amiibo: amiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)) {
             VStack(spacing: 8) {
-                CachedAsyncImage(url: amiibo.image) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 114, height: 114)
-                    case .failure(_):
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.gray.opacity(0.1))
-                            .frame(width: 114, height: 114)
-                            .overlay(
-                                Image(systemName: "exclamationmark.triangle")
-                                    .foregroundColor(.gray)
-                            )
-                    case .empty:
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.gray.opacity(0.1))
-                            .frame(width: 114, height: 114)
-                            .overlay(
-                                ProgressView()
-                            )
-                    @unknown default:
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.gray.opacity(0.1))
-                            .frame(width: 114, height: 114)
-                    }
-                } placeholder: {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.gray.opacity(0.1))
-                        .frame(width: 114, height: 114)
-                        .overlay(
-                            ProgressView()
-                        )
-                }
+                SeriesGridKingfisherImage(url: amiibo.image, width: 114, height: 114, cornerRadius: 8, shadowRadius: 8)
+                    .padding(.vertical, 5) // Add padding to show full shadow
                 .contentShape(Rectangle())
                 
                 Text(amiibo.character)
@@ -350,6 +319,7 @@ struct CollectionFilterControlsView: View {
     @Binding var selectedType: String?
     @Binding var selectedSet: String?
     @Binding var selectedSort: String?
+    @Binding var selectedTab: Int
     let viewModel: AmiiboListViewModel
     let adMobService: AdMobService
     @State private var showingTypeOptions = false
@@ -425,13 +395,15 @@ struct CollectionFilterControlsView: View {
             
             Spacer()
             
-            // Download Image Button
-            Button(action: {
-                showingImageDialog = true
-            }) {
-                Image(systemName: "arrow.down.circle")
-                    .font(.system(size: 20, weight: .regular))
-                    .foregroundColor(.appRed)
+            // Download Image Button - Only show on collection tab (selectedTab == 0)
+            if selectedTab == 0 {
+                Button(action: {
+                    showingImageDialog = true
+                }) {
+                    Image(systemName: "arrow.down.circle")
+                        .font(.system(size: 20, weight: .regular))
+                        .foregroundColor(.appRed)
+                }
             }
         }
         .sheet(isPresented: $showingTypeOptions) {

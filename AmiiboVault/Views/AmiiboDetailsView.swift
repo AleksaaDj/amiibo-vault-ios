@@ -19,41 +19,7 @@ struct AmiiboDetailsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 // Amiibo Image
-                CachedAsyncImage(url: currentAmiibo.image) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 200, height: 200)
-                    case .failure(_):
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.white)
-                            .frame(width: 200, height: 200)
-                            .overlay(
-                                Image(systemName: "exclamationmark.triangle")
-                                    .foregroundColor(.gray)
-                            )
-                    case .empty:
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.white)
-                            .frame(width: 200, height: 200)
-                            .overlay(
-                                ProgressView()
-                            )
-                    @unknown default:
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.white)
-                            .frame(width: 200, height: 200)
-                    }
-                } placeholder: {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.white)
-                        .frame(width: 200, height: 200)
-                        .overlay(
-                            ProgressView()
-                        )
-                }
+                AmiiboDetailsKingfisherImage(url: currentAmiibo.image, width: 200, height: 200, cornerRadius: 8, shadowRadius: 10)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.top, 20)
                 

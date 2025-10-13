@@ -22,6 +22,7 @@ struct AmiiboListView: View {
     @State private var selectedAmiiboForDetails: Amiibo? = nil
     @State private var showingDetails = false
     @StateObject private var themeManager = ThemeManager.shared
+    @StateObject private var orientationManager = OrientationManager()
     
     init(viewModel: AmiiboListViewModel = AmiiboListViewModel(), isDetailsPresented: Binding<Bool> = .constant(false)) {
         self.viewModel = viewModel
@@ -34,8 +35,8 @@ struct AmiiboListView: View {
             SearchBarView(searchText: $viewModel.searchText)
                 .padding(.horizontal)
             
-            // Featured Amiibo Card - Fixed
-            if let featuredAmiibo = viewModel.featuredAmiibo {
+            // Featured Amiibo Card - Fixed (hidden in landscape mode to save space)
+            if !orientationManager.isLandscape, let featuredAmiibo = viewModel.featuredAmiibo {
                 Button(action: {
                     // Dismiss keyboard properly
                     dismissKeyboard()

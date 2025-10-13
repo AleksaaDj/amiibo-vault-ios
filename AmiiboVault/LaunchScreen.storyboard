@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24128" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24063"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="EHf-IW-A2E">
+            <objects>
+                <viewController id="01J-lp-oVM" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bgd-1a-2b3">
+                                <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="grd-2b-3c4">
+                                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                                        <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    </view>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lqd-3c-4d5">
+                                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                                        <subviews>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ani-4d-5e6">
+                                                <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                                                <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.10000000000000001" colorSpace="custom" customColorSpace="sRGB"/>
+                                            </view>
+                                        </subviews>
+                                        <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.050000000000000003" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <constraints>
+                                            <constraint firstAttribute="bottom" secondItem="ani-4d-5e6" secondAttribute="bottom" id="ani-bottom"/>
+                                            <constraint firstItem="ani-4d-5e6" firstAttribute="leading" secondItem="lqd-3c-4d5" secondAttribute="leading" id="ani-leading"/>
+                                            <constraint firstItem="ani-4d-5e6" firstAttribute="top" secondItem="lqd-3c-4d5" secondAttribute="top" id="ani-top"/>
+                                            <constraint firstAttribute="trailing" secondItem="ani-4d-5e6" secondAttribute="trailing" id="ani-trailing"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                                <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="bottom" secondItem="grd-2b-3c4" secondAttribute="bottom" id="grd-bottom"/>
+                                    <constraint firstItem="grd-2b-3c4" firstAttribute="leading" secondItem="bgd-1a-2b3" secondAttribute="leading" id="grd-leading"/>
+                                    <constraint firstItem="grd-2b-3c4" firstAttribute="top" secondItem="bgd-1a-2b3" secondAttribute="top" id="grd-top"/>
+                                    <constraint firstAttribute="trailing" secondItem="grd-2b-3c4" secondAttribute="trailing" id="grd-trailing"/>
+                                    <constraint firstAttribute="bottom" secondItem="lqd-3c-4d5" secondAttribute="bottom" id="lqd-bottom"/>
+                                    <constraint firstItem="lqd-3c-4d5" firstAttribute="leading" secondItem="bgd-1a-2b3" secondAttribute="leading" id="lqd-leading"/>
+                                    <constraint firstItem="lqd-3c-4d5" firstAttribute="top" secondItem="bgd-1a-2b3" secondAttribute="top" id="lqd-top"/>
+                                    <constraint firstAttribute="trailing" secondItem="lqd-3c-4d5" secondAttribute="trailing" id="lqd-trailing"/>
+                                </constraints>
+                            </view>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="nfc_icon" translatesAutoresizingMaskIntoConstraints="NO" id="nfc-5e-6f7">
+                                <rect key="frame" x="146.66666666666666" y="376" width="100" height="100"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="100" id="nfc-height"/>
+                                    <constraint firstAttribute="width" constant="100" id="nfc-width"/>
+                                </constraints>
+                            </imageView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
+                        <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstAttribute="bottom" secondItem="bgd-1a-2b3" secondAttribute="bottom" id="bgd-bottom"/>
+                            <constraint firstItem="bgd-1a-2b3" firstAttribute="leading" secondItem="Ze5-6b-2t3" secondAttribute="leading" id="bgd-leading"/>
+                            <constraint firstItem="bgd-1a-2b3" firstAttribute="top" secondItem="Ze5-6b-2t3" secondAttribute="top" id="bgd-top"/>
+                            <constraint firstAttribute="trailing" secondItem="bgd-1a-2b3" secondAttribute="trailing" id="bgd-trailing"/>
+                            <constraint firstItem="nfc-5e-6f7" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="nfc-centerX"/>
+                            <constraint firstItem="nfc-5e-6f7" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="nfc-centerY"/>
+                        </constraints>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="53" y="375"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="nfc_icon" width="274" height="274"/>
+    </resources>
+</document>

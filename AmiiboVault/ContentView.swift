@@ -12,6 +12,7 @@ struct ContentView: View {
             NavigationView {
                 AmiiboListView(viewModel: amiiboViewModel, isDetailsPresented: $isDetailsPresented)
             }
+            .navigationViewStyle(StackNavigationViewStyle())
             .tabItem {
                 Image(systemName: "magnifyingglass")
                 Text("Home")
@@ -22,6 +23,7 @@ struct ContentView: View {
             NavigationView {
                 PostsView()
             }
+            .navigationViewStyle(StackNavigationViewStyle())
             .tabItem {
                 Image(systemName: "square.and.pencil")
                 Text("Posts")
@@ -32,6 +34,7 @@ struct ContentView: View {
             NavigationView {
                 AmiiboScannerView(isDetailsPresented: $isDetailsPresented, viewModel: amiiboViewModel)
             }
+            .navigationViewStyle(StackNavigationViewStyle())
             .tabItem {
                 Image(systemName: "antenna.radiowaves.left.and.right")
                 Text("Scanner")
@@ -42,6 +45,7 @@ struct ContentView: View {
             NavigationView {
                 GamesView(isGameDetailsPresented: $isGameDetailsPresented)
             }
+            .navigationViewStyle(StackNavigationViewStyle())
             .tabItem {
                 Image(systemName: "gamecontroller")
                 Text("Games")
@@ -52,6 +56,7 @@ struct ContentView: View {
             NavigationView {
                 CollectionView(viewModel: amiiboViewModel, isDetailsPresented: $isDetailsPresented)
             }
+            .navigationViewStyle(StackNavigationViewStyle())
             .tabItem {
                 Image(systemName: "star.fill")
                 Text("Collection")

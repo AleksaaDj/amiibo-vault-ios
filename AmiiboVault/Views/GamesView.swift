@@ -82,8 +82,10 @@ struct GamesView: View {
         }
             .background(themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(red: 1.0, green: 0.984, blue: 0.996))
             .onAppear {
-                // Force refresh when screen appears
-                viewModel.loadGames()
+                // Only load games if not already loaded
+                if viewModel.games.isEmpty {
+                    viewModel.loadGames()
+                }
             }
             .sheet(isPresented: $showingSortOptions) {
                 GameSortOptionsView(

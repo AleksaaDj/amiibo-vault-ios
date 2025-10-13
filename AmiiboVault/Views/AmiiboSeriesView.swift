@@ -61,12 +61,15 @@ struct AmiiboSeriesView: View {
         .onAppear {
             loadSeriesAmiibos()
         }
-        .fullScreenCover(isPresented: Binding(
+        .sheet(isPresented: Binding(
             get: { selectedAmiibo != nil },
             set: { if !$0 { selectedAmiibo = nil; isDetailsPresented = false } }
         )) {
             if let amiibo = selectedAmiibo {
-                AmiiboDetailsView(amiibo: amiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)
+                NavigationView {
+                    AmiiboDetailsView(amiibo: amiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)
+                }
+                .navigationViewStyle(StackNavigationViewStyle())
             }
         }
     }
@@ -88,43 +91,7 @@ struct AmiiboSeriesGridItem: View {
     var body: some View {
         VStack(spacing: 5) {
             // Amiibo Image
-            CachedAsyncImage(url: amiibo.image) { phase in
-                switch phase {
-                case .success(let image):
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 114, height: 114)
-                        .shadow(radius: 5, x: 0, y: 0)
-                case .failure(_):
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.gray.opacity(0.3))
-                        .frame(width: 114, height: 114)
-                        .overlay(
-                            Image(systemName: "exclamationmark.triangle")
-                                .font(.title2)
-                                .foregroundColor(.gray)
-                        )
-                case .empty:
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.gray.opacity(0.3))
-                        .frame(width: 114, height: 114)
-                        .overlay(
-                            ProgressView()
-                        )
-                @unknown default:
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.gray.opacity(0.3))
-                        .frame(width: 114, height: 114)
-                }
-            } placeholder: {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.gray.opacity(0.3))
-                    .frame(width: 114, height: 114)
-                    .overlay(
-                        ProgressView()
-                    )
-            }
+            SeriesGridKingfisherImage(url: amiibo.image, width: 114, height: 114, cornerRadius: 8, shadowRadius: 8)
             .contentShape(Rectangle())
             .onTapGesture {
                 selectedAmiibo = amiibo

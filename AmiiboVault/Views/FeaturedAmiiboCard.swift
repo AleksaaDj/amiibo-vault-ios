@@ -35,41 +35,7 @@ struct FeaturedAmiiboCard: View {
                     Spacer()
                     
                     // Right side - Amiibo image (extends beyond card edges)
-                    CachedAsyncImage(url: amiibo.image) { phase in
-                        switch phase {
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 140, height: 140)
-                        case .failure(_):
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color.clear)
-                                .frame(width: 140, height: 140)
-                                .overlay(
-                                    Image(systemName: "exclamationmark.triangle")
-                                        .foregroundColor(.gray)
-                                )
-                        case .empty:
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color.clear)
-                                .frame(width: 140, height: 140)
-                                .overlay(
-                                    ProgressView()
-                                )
-                        @unknown default:
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color.clear)
-                                .frame(width: 140, height: 140)
-                        }
-                    } placeholder: {
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.clear)
-                            .frame(width: 140, height: 140)
-                            .overlay(
-                                ProgressView()
-                            )
-                    }
+                    FeaturedAmiiboKingfisherImage(url: amiibo.image, width: 140, height: 140, cornerRadius: 8, shadowRadius: 8)
                     .offset(x: 15) // Extend more over top edge
                 }
                 .padding(.horizontal, 20)

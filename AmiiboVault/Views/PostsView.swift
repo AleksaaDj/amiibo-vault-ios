@@ -141,51 +141,14 @@ struct CollectionPostItemView: View {
             
             // Post Image
             if let imageUrl = post.image {
-                CachedAsyncImage(url: imageUrl) { phase in
-                    switch phase {
-                    case .success(let image):
-                        ZStack {
-                            // Fixed-size black background container
-                            Rectangle()
-                                .fill(Color.black)
-                                .frame(height: 280)
-                            
-                            // Image centered within the black container
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(maxHeight: 280)
-                        }
-                    case .failure(_):
-                        Rectangle()
-                            .fill(Color.black)
-                            .frame(height: 280)
-                            .overlay(
-                                Image(systemName: "photo")
-                                    .foregroundColor(.white)
-                                    .font(.system(size: 30))
-                            )
-                    case .empty:
-                        Rectangle()
-                            .fill(Color.black)
-                            .frame(height: 280)
-                            .overlay(
-                                ProgressView()
-                                    .foregroundColor(.white)
-                            )
-                    @unknown default:
-                        Rectangle()
-                            .fill(Color.black)
-                            .frame(height: 280)
-                    }
-                } placeholder: {
+                ZStack {
+                    // Fixed-size black background container
                     Rectangle()
                         .fill(Color.black)
                         .frame(height: 280)
-                        .overlay(
-                            ProgressView()
-                                .foregroundColor(.white)
-                        )
+                    
+                    // Image centered within the black container
+                    CollectionPostKingfisherImage(url: imageUrl, height: 280)
                 }
                 .clipped()
                 .cornerRadius(8)

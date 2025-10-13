@@ -101,7 +101,7 @@ struct SupportView: View {
     }
     
     private func rateApp() {
-        if let url = URL(string: "https://apps.apple.com/app/id123456789") {
+        if let url = URL(string: "https://apps.apple.com/app/id6753917936") {
             UIApplication.shared.open(url)
         }
     }
