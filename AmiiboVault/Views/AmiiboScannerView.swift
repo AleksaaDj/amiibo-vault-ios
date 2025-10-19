@@ -1,4 +1,5 @@
 import SwiftUI
+import FirebaseAnalytics
 
 // Suppress deprecation warning for NavigationLink - will be updated when migrating to NavigationStack
 
@@ -7,6 +8,7 @@ struct AmiiboScannerView: View {
     @StateObject private var themeManager = ThemeManager.shared
     @StateObject private var nfcReader = NTAG215Reader()
     @StateObject private var adMobService = AdMobService.shared
+    @StateObject private var analyticsService = AnalyticsService.shared
     @State private var animationScale: CGFloat = 1.0
     @State private var showingAmiiboDetails = false
     @State private var scannedAmiibo: Amiibo?
@@ -140,6 +142,10 @@ struct AmiiboScannerView: View {
         .onAppear {
             // Set up the repository for the NFC reader
             nfcReader.setRepository(amiiboRepository)
+            
+            // Log screen view
+            analyticsService.logScreenView("scanner_screen", screenClass: "AmiiboScannerView")
+            analyticsService.logEvent(AnalyticsService.AMIIBO_SCANNER_SCREEN_OPENED)
         }
         .onChange(of: nfcReader.scannedAmiibo) { amiibo in
             if let amiibo = amiibo {

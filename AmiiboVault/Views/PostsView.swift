@@ -1,8 +1,10 @@
 import SwiftUI
+import FirebaseAnalytics
 
 struct PostsView: View {
     @StateObject private var viewModel = PostsViewModel()
     @StateObject private var themeManager = ThemeManager.shared
+    @StateObject private var analyticsService = AnalyticsService.shared
     @State private var showingCreatePost = false
     
     var body: some View {
@@ -17,6 +19,7 @@ struct PostsView: View {
                 
                 Button(action: {
                     showingCreatePost = true
+                    analyticsService.logEvent(AnalyticsService.AMIIBO_CREATE_POST, name: "create_post_button_clicked")
                 }) {
                     ZStack {
                         Circle()
@@ -60,6 +63,7 @@ struct PostsView: View {
                                 onLikeTapped: {
                                     if let postId = post.postId {
                                         viewModel.toggleLike(postId: postId)
+                                        analyticsService.logEvent(AnalyticsService.AMIIBO_LIKED, id: postId, name: "post_liked")
                                     }
                                 }
                             )
@@ -69,6 +73,11 @@ struct PostsView: View {
             }
         }
         .background(themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(red: 1.0, green: 0.984, blue: 0.996))
+        .onAppear {
+            // Log screen view
+            analyticsService.logScreenView("community_screen", screenClass: "PostsView")
+            analyticsService.logEvent(AnalyticsService.AMIIBO_COMMUNITY_SCREEN_OPENED)
+        }
         .sheet(isPresented: $showingCreatePost) {
             CreatePostView()
         }

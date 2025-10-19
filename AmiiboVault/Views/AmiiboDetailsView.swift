@@ -1,4 +1,5 @@
 import SwiftUI
+import FirebaseAnalytics
 
 struct AmiiboDetailsView: View {
     let amiibo: Amiibo
@@ -9,6 +10,7 @@ struct AmiiboDetailsView: View {
     @State private var showingCompatibilityView = false
     @StateObject private var themeManager = ThemeManager.shared
     @StateObject private var adMobService = AdMobService.shared
+    @StateObject private var analyticsService = AnalyticsService.shared
     
     // Get the updated amiibo data from the view model
     private var currentAmiibo: Amiibo {
@@ -68,6 +70,7 @@ struct AmiiboDetailsView: View {
                     // More from series button
                     Button(action: {
                         showingSeriesView = true
+                        analyticsService.logEvent(AnalyticsService.AMIIBO_MORE, id: currentAmiibo.head + currentAmiibo.tail, name: "more_from_series")
                     }) {
                         Text("more from series")
                             .font(.system(size: 13, weight: .regular))
@@ -82,6 +85,7 @@ struct AmiiboDetailsView: View {
                     // Compatibility and usage button
                     Button(action: {
                         showingCompatibilityView = true
+                        analyticsService.logEvent(AnalyticsService.AMIIBO_USAGE, id: currentAmiibo.head + currentAmiibo.tail, name: "compatibility_and_usage")
                     }) {
                         Text("compatibility and usage")
                             .font(.system(size: 13, weight: .semibold))
@@ -97,8 +101,10 @@ struct AmiiboDetailsView: View {
                     Button(action: {
                         if currentAmiibo.isInCollection {
                             viewModel.removeFromCollection(currentAmiibo)
+                            analyticsService.logEvent(AnalyticsService.AMIIBO_ADD_COLLECTION, id: currentAmiibo.head + currentAmiibo.tail, name: "remove_from_collection")
                         } else {
                             viewModel.addToCollection(currentAmiibo)
+                            analyticsService.logEvent(AnalyticsService.AMIIBO_ADD_COLLECTION, id: currentAmiibo.head + currentAmiibo.tail, name: "add_to_collection")
                         }
                     }) {
                         HStack(spacing: 8) {
@@ -136,6 +142,7 @@ struct AmiiboDetailsView: View {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: {
                     openAmazonLink(for: currentAmiibo)
+                    analyticsService.logEvent(AnalyticsService.AMIIBO_AMAZON, id: currentAmiibo.head + currentAmiibo.tail, name: currentAmiibo.name)
                 }) {
                     Image(systemName: "cart")
                         .foregroundColor(.appRed)
@@ -146,6 +153,8 @@ struct AmiiboDetailsView: View {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: {
                     viewModel.toggleWishlist(currentAmiibo)
+                    let action = currentAmiibo.isInWishlist ? "remove_from_wishlist" : "add_to_wishlist"
+                    analyticsService.logEvent(AnalyticsService.AMIIBO_ADD_WISHLIST, id: currentAmiibo.head + currentAmiibo.tail, name: action)
                 }) {
                     Image(systemName: currentAmiibo.isInWishlist ? "bookmark.fill" : "bookmark")
                         .foregroundColor(.appRed)
@@ -160,6 +169,10 @@ struct AmiiboDetailsView: View {
         }
         .onAppear {
             isDetailsPresented = true
+            
+            // Log screen view
+            analyticsService.logScreenView("details_screen", screenClass: "AmiiboDetailsView")
+            analyticsService.logEvent(AnalyticsService.AMIIBO_DETAILS_OPENED, id: currentAmiibo.head + currentAmiibo.tail, name: currentAmiibo.name)
         }
         .onDisappear {
             isDetailsPresented = false

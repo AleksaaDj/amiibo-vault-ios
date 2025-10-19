@@ -1,4 +1,5 @@
 import SwiftUI
+import FirebaseAnalytics
 
 // Suppress deprecation warning for NavigationLink - will be updated when migrating to NavigationStack
 
@@ -23,6 +24,7 @@ struct AmiiboListView: View {
     @State private var showingDetails = false
     @StateObject private var themeManager = ThemeManager.shared
     @StateObject private var orientationManager = OrientationManager()
+    @StateObject private var analyticsService = AnalyticsService.shared
     
     init(viewModel: AmiiboListViewModel = AmiiboListViewModel(), isDetailsPresented: Binding<Bool> = .constant(false)) {
         self.viewModel = viewModel
@@ -122,6 +124,10 @@ struct AmiiboListView: View {
         .onAppear {
             // Always try to load featured Amiibo on appear
             viewModel.loadFeaturedAmiiboFromDatabase()
+            
+            // Log screen view
+            analyticsService.logScreenView("search_screen", screenClass: "AmiiboListView")
+            analyticsService.logEvent(AnalyticsService.AMIIBO_SEARCH_SCREEN_OPENED)
         }
         .background(
             // Hidden NavigationLink that gets triggered by state
@@ -195,12 +201,14 @@ struct FilterControlsView: View {
     @ObservedObject var viewModel: AmiiboListViewModel
     let onToggleLayout: () -> Void
     @StateObject private var themeManager = ThemeManager.shared
+    @StateObject private var analyticsService = AnalyticsService.shared
     
     var body: some View {
         HStack {
             // Type Filter Button
             Button(action: {
                 showingTypeOptions = true
+                analyticsService.logEvent(AnalyticsService.AMIIBO_FILTER_TYPE_SEARCH, name: "type_filter_opened")
             }) {
                 HStack(spacing: 2) {
                     Image(systemName: "tag")
@@ -225,6 +233,7 @@ struct FilterControlsView: View {
             // Set Filter Button
             Button(action: {
                 showingSetOptions = true
+                analyticsService.logEvent(AnalyticsService.AMIIBO_FILTER_SET_SEARCH, name: "set_filter_opened")
             }) {
                 HStack(spacing: 2) {
                     Image(systemName: "square.stack.3d.up")
@@ -249,6 +258,7 @@ struct FilterControlsView: View {
             // Sort Button
             Button(action: {
                 showingSortOptions = true
+                analyticsService.logEvent(AnalyticsService.AMIIBO_SORT_SEARCH, name: "sort_options_opened")
             }) {
                 HStack {
                     Image(systemName: "arrow.up.arrow.down")
@@ -264,7 +274,11 @@ struct FilterControlsView: View {
             Spacer()
             
             // Layout Toggle Button
-            Button(action: onToggleLayout) {
+            Button(action: {
+                onToggleLayout()
+                let eventName = isGridView ? AnalyticsService.AMIIBO_LIST : AnalyticsService.AMIIBO_GRID
+                analyticsService.logEvent(eventName, name: isGridView ? "list_view" : "grid_view")
+            }) {
                 Image(systemName: isGridView ? "list.bullet" : "square.grid.2x2")
                     .foregroundColor(.appRed)
                     .font(.title2)
@@ -286,6 +300,7 @@ struct SortOptionsView: View {
     @Binding var sortType: String?
     let onSortChanged: (String?) -> Void
     @Environment(\.dismiss) private var dismiss
+    @StateObject private var analyticsService = AnalyticsService.shared
     
     let sortOptions = [
         "Name A-Z",
@@ -304,6 +319,7 @@ struct SortOptionsView: View {
                 ForEach(sortOptions, id: \.self) { option in
                     Button(action: {
                         sortType = option
+                        analyticsService.logEvent(AnalyticsService.AMIIBO_SORT_SEARCH, name: option)
                         onSortChanged(option)
                         dismiss()
                     }) {
@@ -344,6 +360,7 @@ struct TypeFilterView: View {
     @Binding var selectedType: String?
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var viewModel: AmiiboListViewModel
+    @StateObject private var analyticsService = AnalyticsService.shared
     
     init(selectedType: Binding<String?>, viewModel: AmiiboListViewModel = AmiiboListViewModel()) {
         self._selectedType = selectedType
@@ -362,6 +379,7 @@ struct TypeFilterView: View {
                 ForEach(AmiiboFilters.types, id: \.self) { type in
                     Button(action: {
                         viewModel.setTypeFilter(type)
+                        analyticsService.logEvent(AnalyticsService.AMIIBO_FILTER_TYPE_SEARCH, name: type)
                         dismiss()
                     }) {
                         HStack {
@@ -394,6 +412,7 @@ struct SetFilterView: View {
     @Binding var selectedSet: String?
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var viewModel: AmiiboListViewModel
+    @StateObject private var analyticsService = AnalyticsService.shared
     
     init(selectedSet: Binding<String?>, viewModel: AmiiboListViewModel = AmiiboListViewModel()) {
         self._selectedSet = selectedSet
@@ -412,6 +431,7 @@ struct SetFilterView: View {
                 ForEach(AmiiboFilters.sets, id: \.self) { set in
                     Button(action: {
                         viewModel.setSetFilter(set)
+                        analyticsService.logEvent(AnalyticsService.AMIIBO_FILTER_SET_SEARCH, name: set)
                         dismiss()
                     }) {
                         HStack {

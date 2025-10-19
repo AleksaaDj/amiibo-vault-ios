@@ -1,7 +1,10 @@
 import SwiftUI
+import FirebaseAnalytics
 
 struct SupportView: View {
     @StateObject private var themeManager = ThemeManager.shared
+    @StateObject private var ratingManager = RatingManager.shared
+    @StateObject private var analyticsService = AnalyticsService.shared
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
@@ -98,17 +101,22 @@ struct SupportView: View {
             .background(themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(red: 1.0, green: 0.984, blue: 0.996))
             .navigationTitle("Support")
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                // Log screen view
+                analyticsService.logScreenView("support_screen", screenClass: "SupportView")
+                analyticsService.logEvent(AnalyticsService.AMIIBO_SUPPORT_SCREEN_OPENED)
+            }
     }
     
     private func rateApp() {
-        if let url = URL(string: "https://apps.apple.com/app/id6753917936") {
-            UIApplication.shared.open(url)
-        }
+        ratingManager.openAppStoreRating()
+        analyticsService.logEvent(AnalyticsService.AMIIBO_RATE, name: "rate_button_clicked")
     }
     
     private func openKoFi() {
         if let url = URL(string: "https://ko-fi.com/softwavegames") {
             UIApplication.shared.open(url)
+            analyticsService.logEvent(AnalyticsService.AMIIBO_KOFI, name: "kofi_button_clicked")
         }
     }
 }

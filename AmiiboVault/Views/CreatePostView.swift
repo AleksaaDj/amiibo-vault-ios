@@ -1,4 +1,5 @@
 import SwiftUI
+import FirebaseAnalytics
 
 // Suppress ViewBuilder warning for iOS version compatibility
 import PhotosUI
@@ -45,6 +46,7 @@ struct CreatePostView: View {
     @StateObject private var viewModel = CreatePostViewModel()
     @StateObject private var themeManager = ThemeManager.shared
     @StateObject private var adMobService = AdMobService.shared
+    @StateObject private var analyticsService = AnalyticsService.shared
     @Environment(\.dismiss) private var dismiss
     @State private var selectedItem: PhotosPickerItem? = nil
     @State private var showingImagePicker = false
@@ -125,6 +127,7 @@ struct CreatePostView: View {
             
             Button(action: {
                 viewModel.showAvatarPicker = true
+                analyticsService.logEvent(AnalyticsService.AMIIBO_CREATE_AVATAR, name: "avatar_creation_opened")
             }) {
                 HStack {
                     // Avatar Preview with rainbow border

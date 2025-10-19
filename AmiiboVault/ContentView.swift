@@ -1,10 +1,12 @@
 import SwiftUI
+import FirebaseAnalytics
 
 struct ContentView: View {
     @State private var selectedTab = 0
     @StateObject private var amiiboViewModel = AmiiboListViewModel()
     @State private var isDetailsPresented = false
     @State private var isGameDetailsPresented = false
+    @StateObject private var ratingManager = RatingManager.shared
     
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -76,6 +78,24 @@ struct ContentView: View {
             
             UITabBar.appearance().standardAppearance = appearance
             UITabBar.appearance().scrollEdgeAppearance = appearance
+            
+            // Handle rating dialog logic
+            handleRatingDialog()
+        }
+    }
+    
+    // MARK: - Rating Dialog Logic
+    private func handleRatingDialog() {
+        // Increment app opened times
+        ratingManager.incrementAppOpenedTimes()
+        
+        // Check if we should show rating dialog
+        if ratingManager.shouldShowRatingDialog() {
+            // Add a small delay to ensure the UI is fully loaded
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                // Use production method for App Store
+                ratingManager.requestRating()
+            }
         }
     }
 }

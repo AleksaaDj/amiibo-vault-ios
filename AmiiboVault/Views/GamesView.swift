@@ -1,9 +1,11 @@
 import SwiftUI
+import FirebaseAnalytics
 
 struct GamesView: View {
     @Binding var isGameDetailsPresented: Bool
     @StateObject private var viewModel = GamesViewModel()
     @StateObject private var themeManager = ThemeManager.shared
+    @StateObject private var analyticsService = AnalyticsService.shared
     @State private var showingSortOptions = false
     @State private var showingGenreOptions = false
     
@@ -86,6 +88,10 @@ struct GamesView: View {
                 if viewModel.games.isEmpty {
                     viewModel.loadGames()
                 }
+                
+                // Log screen view
+                analyticsService.logScreenView("games_screen", screenClass: "GamesView")
+                analyticsService.logEvent(AnalyticsService.AMIIBO_GAMES_SCREEN_OPENED)
             }
             .sheet(isPresented: $showingSortOptions) {
                 GameSortOptionsView(

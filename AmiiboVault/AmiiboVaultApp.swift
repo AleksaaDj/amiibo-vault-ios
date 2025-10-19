@@ -8,6 +8,7 @@
 import SwiftUI
 import CoreData
 import Firebase
+import FirebaseAnalytics
 
 @main
 struct AmiiboVaultApp: App {
@@ -15,6 +16,9 @@ struct AmiiboVaultApp: App {
     
     init() {
         FirebaseApp.configure()
+        
+        // Enable Analytics collection (should be enabled by default)
+        Analytics.setAnalyticsCollectionEnabled(true)
     }
 
     var body: some Scene {

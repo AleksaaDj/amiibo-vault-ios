@@ -1,4 +1,5 @@
 import SwiftUI
+import FirebaseAnalytics
 
 struct CollectionView: View {
     @ObservedObject var viewModel: AmiiboListViewModel
@@ -11,6 +12,7 @@ struct CollectionView: View {
     @State private var showingSupport = false
     @StateObject private var adMobService = AdMobService.shared
     @StateObject private var orientationManager = OrientationManager()
+    @StateObject private var analyticsService = AnalyticsService.shared
     
     private let tabs = ["my collection", "wishlist"]
     
@@ -29,6 +31,7 @@ struct CollectionView: View {
                     // Theme Toggle Button
                     Button(action: {
                         themeManager.toggleTheme()
+                        analyticsService.logEvent(AnalyticsService.AMIIBO_THEME, name: "theme_toggled")
                     }) {
                         Image(systemName: themeManager.isDarkMode ? "sun.max.fill" : "moon.fill")
                             .font(.title2)
@@ -164,6 +167,10 @@ struct CollectionView: View {
         .onAppear {
             // Refresh collection and wishlist data when screen appears
             viewModel.refreshCollectionAndWishlist()
+            
+            // Log screen view
+            analyticsService.logScreenView("collections_screen", screenClass: "CollectionView")
+            analyticsService.logEvent(AnalyticsService.AMIIBO_COLLECTIONS_SCREEN_OPENED)
         }
         .sheet(isPresented: $showingSupport) {
             SupportView()
@@ -322,6 +329,7 @@ struct CollectionFilterControlsView: View {
     @Binding var selectedTab: Int
     let viewModel: AmiiboListViewModel
     let adMobService: AdMobService
+    @StateObject private var analyticsService = AnalyticsService.shared
     @State private var showingTypeOptions = false
     @State private var showingSetOptions = false
     @State private var showingSortOptions = false
@@ -399,6 +407,7 @@ struct CollectionFilterControlsView: View {
             if selectedTab == 0 {
                 Button(action: {
                     showingImageDialog = true
+                    analyticsService.logEvent(AnalyticsService.AMIIBO_IMAGE_DOWNLOAD, name: "image_download_dialog_opened")
                 }) {
                     Image(systemName: "arrow.down.circle")
                         .font(.system(size: 20, weight: .regular))
@@ -425,6 +434,7 @@ struct CollectionFilterControlsView: View {
                         DispatchQueue.main.async {
                             if success {
                                 showingSuccessAlert = true
+                                analyticsService.logEvent(AnalyticsService.AMIIBO_IMAGE_DOWNLOAD_CONFIRMED, name: "image_download_confirmed")
                             }
                         }
                     }
