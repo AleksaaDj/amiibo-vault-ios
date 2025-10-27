@@ -1,5 +1,4 @@
 import SwiftUI
-import FirebaseAnalytics
 
 struct GameDetailsView: View {
     let game: Game
@@ -8,7 +7,6 @@ struct GameDetailsView: View {
     @State private var showingScreenshots = false
     @State private var selectedScreenshot: Screenshot?
     @StateObject private var adMobService = AdMobService.shared
-    @StateObject private var analyticsService = AnalyticsService.shared
     
     var body: some View {
         ScrollView {
@@ -171,7 +169,6 @@ struct GameDetailsView: View {
                         let amazonUrl = "https://www.amazon.com/s?k=\(filteredName)+nintendo+game&tag=amiibovault-20"
                         if let url = URL(string: amazonUrl) {
                             UIApplication.shared.open(url)
-                            analyticsService.logEvent(AnalyticsService.GAME_AMAZON, id: String(game.id), name: gameName)
                         }
                     }
                 }) {
@@ -184,10 +181,6 @@ struct GameDetailsView: View {
         .background(themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(red: 1.0, green: 0.984, blue: 0.996))
         .onAppear {
             isGameDetailsPresented = true
-            
-            // Log screen view
-            analyticsService.logScreenView("game_details_screen", screenClass: "GameDetailsView")
-            
             // Show interstitial ad (every 3rd time)
             adMobService.showInterstitialAd {
                 // Ad dismissed or not shown
