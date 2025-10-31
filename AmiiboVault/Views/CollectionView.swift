@@ -13,6 +13,7 @@ struct CollectionView: View {
     @StateObject private var adMobService = AdMobService.shared
     @StateObject private var orientationManager = OrientationManager()
     @StateObject private var analyticsService = AnalyticsService.shared
+    @StateObject private var purchaseManager = PurchaseManager.shared
     
     private let tabs = ["my collection", "wishlist"]
     
@@ -36,6 +37,20 @@ struct CollectionView: View {
                         Image(systemName: themeManager.isDarkMode ? "sun.max.fill" : "moon.fill")
                             .font(.title2)
                             .foregroundColor(.appRed)
+                    }
+                    
+                    // Remove Ads Button - only show if not purchased
+                    if !purchaseManager.isNoAdsPurchased {
+                        Button(action: {
+                            Task {
+                                await purchaseManager.makeNoAdsPurchase()
+                                analyticsService.logEvent(AnalyticsService.AMIIBO_REMOVE_ADS, name: "remove_ads_collection_button")
+                            }
+                        }) {
+                            Image(systemName: "rectangle.stack.badge.minus.fill")
+                                .font(.title2)
+                                .foregroundColor(.appRed)
+                        }
                     }
                     
                     // Support Button
@@ -445,13 +460,17 @@ struct CollectionFilterControlsView: View {
         .alert("Success!", isPresented: $showingSuccessAlert) {
             Button("OK") {
                 showingSuccessAlert = false
+            }
+        } message: {
+            Text("Your collection image has been successfully saved to your Photos library!")
+        }
+        .onChange(of: showingSuccessAlert) { newValue in
+            if !newValue && !PurchaseManager.shared.isNoAdsPurchased {
                 // Show interstitial ad after success dialog is dismissed
                 adMobService.showInterstitialAdImmediately {
                     // Ad dismissed or not shown
                 }
             }
-        } message: {
-            Text("Your collection image has been successfully saved to your Photos library!")
         }
     }
 }

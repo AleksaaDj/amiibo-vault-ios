@@ -39,6 +39,8 @@ class NetworkService: ObservableObject {
     
     // MARK: - Games API (RAWG)
     func fetchNintendoGames(apiKey: String, page: Int = 1, pageSize: Int = 40) -> AnyPublisher<GamesListResponse, Error> {
+        // Platform IDs: 7=Nintendo Switch, 8=PC, 9=Xbox One, 10=Nintendo Switch, 11=Nintendo Wii U
+        // Note: Switch 2 not yet in RAWG API
         let platforms = "7,8,9,10,11"
         let publishers = "nintendo"
         

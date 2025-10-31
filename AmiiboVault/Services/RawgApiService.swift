@@ -10,7 +10,7 @@ class RawgApiService {
     
     private func loadApiKey() {
         // RAWG API key for Nintendo games
-        apiKey = "b50be92a7cc049729fe474281dee3aa8"
+        apiKey = "6622cbb07588423cb9ee0fd41c939ea8"
         
         // TODO: In production, this should be fetched from Firebase like the Android app
         // This should match the Android implementation where it fetches from Firebase
@@ -27,6 +27,8 @@ class RawgApiService {
     }
     
     private func fetchAllPages(page: Int, allGames: [Game], completion: @escaping (Result<[Game], Error>) -> Void) {
+        // Platform IDs: 7=Nintendo Switch, 8=PC, 9=Xbox One, 10=Nintendo Switch (duplicate), 11=Nintendo Wii U
+        // Note: Switch 2 not yet in RAWG API
         let urlString = "\(baseURL)/games?platforms=7,8,9,10,11&publishers=nintendo&page_size=40&page=\(page)&key=\(apiKey)"
         
         guard let url = URL(string: urlString) else {

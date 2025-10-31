@@ -47,6 +47,7 @@ struct CreatePostView: View {
     @StateObject private var themeManager = ThemeManager.shared
     @StateObject private var adMobService = AdMobService.shared
     @StateObject private var analyticsService = AnalyticsService.shared
+    @StateObject private var purchaseManager = PurchaseManager.shared
     @Environment(\.dismiss) private var dismiss
     @State private var selectedItem: PhotosPickerItem? = nil
     @State private var showingImagePicker = false
@@ -70,9 +71,11 @@ struct CreatePostView: View {
                     // Publish Button
                     publishButton
                     
-                    // Banner Ad
-                    LargeBannerAdView(adUnitID: adMobService.getBannerAdUnitID())
-                        .padding(.top, 20)
+                    // Banner Ad - only if ads not purchased
+                    if !purchaseManager.isNoAdsPurchased {
+                        LargeBannerAdView(adUnitID: adMobService.getBannerAdUnitID())
+                            .padding(.top, 20)
+                    }
                 }
                 .padding()
             }

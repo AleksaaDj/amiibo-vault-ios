@@ -7,6 +7,7 @@ struct GameDetailsView: View {
     @State private var showingScreenshots = false
     @State private var selectedScreenshot: Screenshot?
     @StateObject private var adMobService = AdMobService.shared
+    @StateObject private var purchaseManager = PurchaseManager.shared
     
     var body: some View {
         ScrollView {
@@ -149,10 +150,12 @@ struct GameDetailsView: View {
                         }
                         .padding(.bottom, 30)
                         
-                        // Small Banner Ad at bottom
-                        FullWidthBannerAdView(adUnitID: adMobService.getBannerAdUnitID())
-                            .padding(.horizontal, 20)
-                            .padding(.bottom, 20)
+                        // Small Banner Ad at bottom - only if ads not purchased
+                        if !purchaseManager.isNoAdsPurchased {
+                            FullWidthBannerAdView(adUnitID: adMobService.getBannerAdUnitID())
+                                .padding(.horizontal, 20)
+                                .padding(.bottom, 20)
+                        }
                     }
                 }
             }
@@ -181,9 +184,11 @@ struct GameDetailsView: View {
         .background(themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(red: 1.0, green: 0.984, blue: 0.996))
         .onAppear {
             isGameDetailsPresented = true
-            // Show interstitial ad (every 3rd time)
-            adMobService.showInterstitialAd {
-                // Ad dismissed or not shown
+            // Show interstitial ad (every 3rd time) - only if ads not purchased
+            if !purchaseManager.isNoAdsPurchased {
+                adMobService.showInterstitialAd {
+                    // Ad dismissed or not shown
+                }
             }
         }
         .onDisappear {

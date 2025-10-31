@@ -5,6 +5,7 @@ struct SupportView: View {
     @StateObject private var themeManager = ThemeManager.shared
     @StateObject private var ratingManager = RatingManager.shared
     @StateObject private var analyticsService = AnalyticsService.shared
+    @StateObject private var purchaseManager = PurchaseManager.shared
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
@@ -39,6 +40,27 @@ struct SupportView: View {
                     
                     // Action Buttons
                     VStack(spacing: 16) {
+                        // Remove Ads Button
+                        Button(action: {
+                            Task {
+                                await purchaseManager.makeNoAdsPurchase()
+                                analyticsService.logEvent(AnalyticsService.AMIIBO_REMOVE_ADS, name: "remove_ads_button_clicked")
+                            }
+                        }) {
+                            HStack {
+                                Spacer()
+                                Text(purchaseManager.isNoAdsPurchased ? "Ads Removed ✓" : "Remove Ads")
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.white)
+                                Spacer()
+                            }
+                            .padding(.vertical, 12)
+                            .background(purchaseManager.isNoAdsPurchased ? Color.gray : Color.black)
+                            .cornerRadius(12)
+                        }
+                        .disabled(purchaseManager.isNoAdsPurchased)
+                        
                         // Rate App Button
                         Button(action: {
                             rateApp()
@@ -94,10 +116,10 @@ struct SupportView: View {
                             .cornerRadius(12)
                         }
                     }
-                    .padding(.bottom, 40)
                 }
-                .padding(.horizontal, 20)
+                .padding(.bottom, 40)
             }
+            .padding(.horizontal, 20)
             .background(themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(red: 1.0, green: 0.984, blue: 0.996))
             .navigationTitle("Support")
             .navigationBarTitleDisplayMode(.inline)
