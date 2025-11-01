@@ -6,9 +6,9 @@ import Combine
 class AdMobService: NSObject, ObservableObject {
     static let shared = AdMobService()
     
-    // Ad Unit IDs - Using test IDs for development
-    private let interstitialAdUnitID = "ca-app-pub-3564715368914014/9379723307" // Test interstitial
-    private let bannerAdUnitID = "ca-app-pub-3564715368914014/3005886648" // Test banner
+    // Ad Unit IDs
+    private let interstitialAdUnitID = "ca-app-pub-3564715368914014/9379723307" // Production interstitial
+    private let bannerAdUnitID = "ca-app-pub-3564715368914014/3005886648" // Production banner
     
     @Published var interstitialAd: InterstitialAd?
     @Published var isAdLoaded = false

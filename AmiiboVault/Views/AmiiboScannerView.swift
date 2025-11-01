@@ -9,6 +9,7 @@ struct AmiiboScannerView: View {
     @StateObject private var nfcReader = NTAG215Reader()
     @StateObject private var adMobService = AdMobService.shared
     @StateObject private var analyticsService = AnalyticsService.shared
+    @StateObject private var purchaseManager = PurchaseManager.shared
     @State private var animationScale: CGFloat = 1.0
     @State private var showingAmiiboDetails = false
     @State private var scannedAmiibo: Amiibo?
@@ -88,46 +89,91 @@ struct AmiiboScannerView: View {
                     nfcReader.stopScanning()
                 }
                 
-                // Instruction Text
-                Text("Tap the scan button below\nto start scanning for Amiibo")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(themeManager.isDarkMode ? .white : .black)
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(4)
-                    .padding(.horizontal, 40)
-                    .padding(.top, 20) // Reduced padding to bring text closer
-                
-                
-                // Scan Button
-                Button(action: {
-                    if nfcReader.isScanning {
-                        nfcReader.stopScanning()
-                    } else {
-                        nfcReader.startScanning()
+                // Check if scanner is purchased
+                if purchaseManager.isAmiiboScanPurchased {
+                    // Instruction Text
+                    Text("Tap the scan button below\nto start scanning for Amiibo")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(themeManager.isDarkMode ? .white : .black)
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(4)
+                        .padding(.horizontal, 40)
+                        .padding(.top, 20) // Reduced padding to bring text closer
+                    
+                    
+                    // Scan Button
+                    Button(action: {
+                        if nfcReader.isScanning {
+                            nfcReader.stopScanning()
+                        } else {
+                            nfcReader.startScanning()
+                        }
+                    }) {
+                        HStack {
+                            Image(systemName: nfcReader.isScanning ? "stop.circle.fill" : "antenna.radiowaves.left.and.right")
+                                .font(.system(size: 18, weight: .medium))
+                            Text(nfcReader.isScanning ? "Stop Scanning" : "Start Scanning")
+                                .font(.system(size: 18, weight: .semibold))
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 30)
+                        .padding(.vertical, 15)
+                        .background(
+                            RoundedRectangle(cornerRadius: 25)
+                                .fill(nfcReader.isScanning ? Color.gray : Color.appRed)
+                        )
                     }
-                }) {
-                    HStack {
-                        Image(systemName: nfcReader.isScanning ? "stop.circle.fill" : "antenna.radiowaves.left.and.right")
-                            .font(.system(size: 18, weight: .medium))
-                        Text(nfcReader.isScanning ? "Stop Scanning" : "Start Scanning")
-                            .font(.system(size: 18, weight: .semibold))
+                    .padding(.top, 20)
+                } else {
+                    // Show purchase button if not purchased
+                    Text("Enable NFC Scanning")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundColor(themeManager.isDarkMode ? .white : .black)
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(4)
+                        .padding(.horizontal, 40)
+                        .padding(.top, 20)
+                    
+                    Text("Purchase the scanner feature to read your Amiibo figures")
+                        .font(.system(size: 14, weight: .regular))
+                        .foregroundColor(themeManager.isDarkMode ? .white.opacity(0.7) : .gray)
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(4)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, 40)
+                        .padding(.top, 10)
+                    
+                    Button(action: {
+                        Task {
+                            await purchaseManager.makeAmiiboScanPurchase()
+                            analyticsService.logEvent(AnalyticsService.AMIIBO_SCANNER_SCREEN_OPENED, name: "purchase_scanner_clicked")
+                        }
+                    }) {
+                        HStack {
+                            Image(systemName: "lock.fill")
+                                .font(.system(size: 18, weight: .medium))
+                            Text("Enable Scanning")
+                                .font(.system(size: 18, weight: .semibold))
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 30)
+                        .padding(.vertical, 15)
+                        .background(
+                            RoundedRectangle(cornerRadius: 25)
+                                .fill(Color.appRed)
+                        )
                     }
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 30)
-                    .padding(.vertical, 15)
-                    .background(
-                        RoundedRectangle(cornerRadius: 25)
-                            .fill(nfcReader.isScanning ? Color.gray : Color.appRed)
-                    )
+                    .padding(.top, 20)
                 }
-                .padding(.top, 20)
                 
                 Spacer() // Push content up
                 
-                // Banner Ad at bottom
-                LargeBannerAdView(adUnitID: adMobService.getBannerAdUnitID())
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 20) // Reduced padding for system tab bar
+                // Banner Ad at bottom - only if ads not purchased
+                if !purchaseManager.isNoAdsPurchased {
+                    LargeBannerAdView(adUnitID: adMobService.getBannerAdUnitID())
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 20) // Reduced padding for system tab bar
+                }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }

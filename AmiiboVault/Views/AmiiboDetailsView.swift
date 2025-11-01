@@ -11,6 +11,7 @@ struct AmiiboDetailsView: View {
     @StateObject private var themeManager = ThemeManager.shared
     @StateObject private var adMobService = AdMobService.shared
     @StateObject private var analyticsService = AnalyticsService.shared
+    @StateObject private var purchaseManager = PurchaseManager.shared
     
     // Get the updated amiibo data from the view model
     private var currentAmiibo: Amiibo {
@@ -184,9 +185,11 @@ struct AmiiboDetailsView: View {
             AmiiboCompatibilityView(amiibo: currentAmiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)
         }
         .onAppear {
-            // Show interstitial ad (every 3rd time)
-            adMobService.showInterstitialAd {
-                // Ad dismissed or not shown
+            // Show interstitial ad (every 3rd time) - only if ads not purchased
+            if !purchaseManager.isNoAdsPurchased {
+                adMobService.showInterstitialAd {
+                    // Ad dismissed or not shown
+                }
             }
         }
     }
