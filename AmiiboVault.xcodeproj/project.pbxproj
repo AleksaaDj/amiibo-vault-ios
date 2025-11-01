@@ -468,6 +468,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AmiiboVault/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = AmiiVault;
 				INFOPLIST_KEY_NFCReaderUsageDescription = "This app uses NFC to scan Amiibo figures and read their data.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "This app needs access to save collection images to your Photos library.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -508,6 +509,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AmiiboVault/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = AmiiVault;
 				INFOPLIST_KEY_NFCReaderUsageDescription = "This app uses NFC to scan Amiibo figures and read their data.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "This app needs access to save collection images to your Photos library.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

@@ -11,7 +11,7 @@ struct SupportView: View {
         ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     // Title
-                    Text("Support Amiibo Vault development")
+                    Text("Support AmiiVault development")
                         .font(.title)
                         .fontWeight(.bold)
                         .foregroundColor(themeManager.isDarkMode ? .white : .black)
@@ -19,17 +19,17 @@ struct SupportView: View {
                     
                     // Description paragraphs
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("Amiibo Vault relies on your generous support for its continued development. Consider making a small donation to our team by purchasing us a coffee by clicking a button below.")
+                        Text("AmiiVault relies on your generous support for its continued development. Consider making a small donation to our team by purchasing us a coffee by clicking a button below.")
                             .font(.body)
                             .foregroundColor(themeManager.isDarkMode ? .white.opacity(0.8) : .gray)
                             .lineSpacing(4)
                         
-                        Text("Your rating of Amiibo Vault on the App Store would also serve as a valuable contribution, providing us with vital feedback to adapt and improve our offerings.")
+                        Text("Your rating of AmiiVault on the App Store would also serve as a valuable contribution, providing us with vital feedback to adapt and improve our offerings.")
                             .font(.body)
                             .foregroundColor(themeManager.isDarkMode ? .white.opacity(0.8) : .gray)
                             .lineSpacing(4)
                         
-                        Text("Your invaluable support ensures we can continue to make Amiibo Vault even more enjoyable for all the Amiibo enthusiasts out there. Thank you very much.")
+                        Text("Your invaluable support ensures we can continue to make AmiiVault even more enjoyable for all the Amiibo enthusiasts out there. Thank you very much.")
                             .font(.body)
                             .foregroundColor(themeManager.isDarkMode ? .white.opacity(0.8) : .gray)
                             .lineSpacing(4)
@@ -45,7 +45,7 @@ struct SupportView: View {
                         }) {
                             HStack {
                                 Spacer()
-                                Text("Rate Amiibo Vault")
+                                Text("Rate AmiiVault")
                                     .font(.headline)
                                     .fontWeight(.semibold)
                                     .foregroundColor(.white)
