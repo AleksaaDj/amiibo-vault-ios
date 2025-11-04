@@ -17,8 +17,8 @@ class PurchaseManager: ObservableObject {
     @Published var isAmiiboScanPurchased: Bool = false
     
     private var updateListenerTask: Task<Void, Never>?
-    private let noAdsProductID = "no_ads"
-    private let scanProductID = "amiibo_scan"
+    private let noAdsProductID = "remove_advertising"
+    private let scanProductID = "amiibo_scanner"
     
     private init() {
         // Load purchase state from UserDefaults
@@ -82,6 +82,12 @@ class PurchaseManager: ObservableObject {
     
     func makeAmiiboScanPurchase() async {
         await makePurchase(productID: scanProductID)
+    }
+    
+    func restorePurchases() async {
+        // StoreKit 2.0 automatically restores purchases through Transaction.currentEntitlements
+        // We just need to verify them again
+        await verifyPurchases()
     }
     
     private func makePurchase(productID: String) async {

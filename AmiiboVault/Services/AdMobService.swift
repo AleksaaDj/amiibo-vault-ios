@@ -37,8 +37,8 @@ class AdMobService: NSObject, ObservableObject {
     func showInterstitialAd(completion: @escaping () -> Void) {
         interstitialClickTimes += 1
         
-        // Show ad every 5th time
-        if interstitialClickTimes % 5 == 0 {
+        // Show ad every 8th time
+        if interstitialClickTimes % 8 == 0 {
             if let ad = interstitialAd {
                 ad.fullScreenContentDelegate = self
                 if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,

@@ -61,6 +61,26 @@ struct SupportView: View {
                         }
                         .disabled(purchaseManager.isNoAdsPurchased)
                         
+                        // Restore Purchases Button
+                        Button(action: {
+                            Task {
+                                await purchaseManager.restorePurchases()
+                                analyticsService.logEvent("restore_purchases_clicked")
+                            }
+                        }) {
+                            HStack {
+                                Spacer()
+                                Text("Restore Purchases")
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.white)
+                                Spacer()
+                            }
+                            .padding(.vertical, 12)
+                            .background(Color.blue)
+                            .cornerRadius(12)
+                        }
+                        
                         // Rate App Button
                         Button(action: {
                             rateApp()

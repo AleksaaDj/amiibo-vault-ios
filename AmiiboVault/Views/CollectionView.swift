@@ -29,16 +29,6 @@ struct CollectionView: View {
                 Spacer()
                 
                 HStack(spacing: 16) {
-                    // Theme Toggle Button
-                    Button(action: {
-                        themeManager.toggleTheme()
-                        analyticsService.logEvent(AnalyticsService.AMIIBO_THEME, name: "theme_toggled")
-                    }) {
-                        Image(systemName: themeManager.isDarkMode ? "sun.max.fill" : "moon.fill")
-                            .font(.title2)
-                            .foregroundColor(.appRed)
-                    }
-                    
                     // Remove Ads Button - only show if not purchased
                     if !purchaseManager.isNoAdsPurchased {
                         Button(action: {
@@ -47,10 +37,20 @@ struct CollectionView: View {
                                 analyticsService.logEvent(AnalyticsService.AMIIBO_REMOVE_ADS, name: "remove_ads_collection_button")
                             }
                         }) {
-                            Image(systemName: "rectangle.stack.badge.minus.fill")
-                                .font(.title2)
+                            Text("Ads")
+                                .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.appRed)
                         }
+                    }
+                    
+                    // Theme Toggle Button
+                    Button(action: {
+                        themeManager.toggleTheme()
+                        analyticsService.logEvent(AnalyticsService.AMIIBO_THEME, name: "theme_toggled")
+                    }) {
+                        Image(systemName: themeManager.isDarkMode ? "sun.max.fill" : "moon.fill")
+                            .font(.title2)
+                            .foregroundColor(.appRed)
                     }
                     
                     // Support Button
