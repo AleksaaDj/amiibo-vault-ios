@@ -24,7 +24,7 @@ class AdMobService: NSObject, ObservableObject {
         let request = Request()
         InterstitialAd.load(with: interstitialAdUnitID, request: request) { [weak self] ad, error in
             DispatchQueue.main.async {
-                if let error = error {
+                if error != nil {
                     self?.isAdLoaded = false
                     return
                 }
@@ -37,8 +37,8 @@ class AdMobService: NSObject, ObservableObject {
     func showInterstitialAd(completion: @escaping () -> Void) {
         interstitialClickTimes += 1
         
-        // Show ad every 8th time
-        if interstitialClickTimes % 8 == 0 {
+        // Show ad every 7th time
+        if interstitialClickTimes % 7 == 0 {
             if let ad = interstitialAd {
                 ad.fullScreenContentDelegate = self
                 if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,

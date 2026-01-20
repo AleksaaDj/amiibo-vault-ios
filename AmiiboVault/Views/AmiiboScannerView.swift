@@ -40,53 +40,68 @@ struct AmiiboScannerView: View {
             .background(themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(.systemBackground))
             
             // Main Content
-            VStack(spacing: 15) {
+            VStack(spacing: 8) {
                 Spacer()
-                    .frame(height: 60) // Further reduced space to push content up
+                    .frame(height: 100) // More space at the top
                 
-                // Radar animation with fixed center - smaller radius, closer to icon
-                ZStack {
-                    // Circles expanding and shrinking - smaller radius, closer to icon
-                    ForEach(0..<7, id: \.self) { index in
-                        Circle()
-                            .stroke(
-                                index == 6 ? Color.gray.opacity(0.3) : // Lighter outer circle
-                                index == 0 ? Color.gray.opacity(0.8) : // Darker inner circle
-                                Color.gray.opacity(0.6), // Regular circles
-                                lineWidth: 3
+                // Check if scanner is purchased - show animation if purchased, image if not
+                if purchaseManager.isAmiiboScanPurchased {
+                    // Radar animation with fixed center - smaller radius, closer to icon
+                    ZStack {
+                        // Circles expanding and shrinking - smaller radius, closer to icon
+                        ForEach(0..<7, id: \.self) { index in
+                            Circle()
+                                .stroke(
+                                    index == 6 ? Color.gray.opacity(0.3) : // Lighter outer circle
+                                    index == 0 ? Color.gray.opacity(0.8) : // Darker inner circle
+                                    Color.gray.opacity(0.6), // Regular circles
+                                    lineWidth: 3
+                                )
+                                .frame(width: 120 + CGFloat(index * 25), height: 120 + CGFloat(index * 25))
+                                .scaleEffect(animationScale)
+                                .opacity(1 - Double(index) * 0.12)
+                        }
+                        
+                        // NFC icon - absolutely centered with black circle background
+                        Image("nfc_icon")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 40, height: 40)
+                            .foregroundColor(.gray)
+                            .background(
+                                Circle()
+                                    .fill(Color.black)
+                                    .frame(width: 75, height: 75)
                             )
-                            .frame(width: 120 + CGFloat(index * 25), height: 120 + CGFloat(index * 25))
-                            .scaleEffect(animationScale)
-                            .opacity(1 - Double(index) * 0.12)
                     }
-                    
-                    // NFC icon - absolutely centered with black circle background
-                    Image("nfc_icon")
+                    .frame(width: 250, height: 250)
+                    .padding(.bottom, 10) // Add bottom spacing to animation
+                    .onAppear {
+                        withAnimation(
+                            Animation.easeInOut(duration: 2.0)
+                                .repeatForever(autoreverses: true)
+                        ) {
+                            animationScale = 1.2
+                        }
+                        
+                        // Set up repository when view appears
+                        nfcReader.setRepository(amiiboRepository)
+                    }
+                    .onDisappear {
+                        // Stop NFC scanning when view disappears
+                        nfcReader.stopScanning()
+                    }
+                } else {
+                    // Show link_scanner image when not purchased
+                    Image("link_scanner")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: 40, height: 40)
-                        .foregroundColor(.gray)
-                        .background(
-                            Circle()
-                                .fill(Color.black)
-                                .frame(width: 75, height: 75)
-                        )
-                }
-                .frame(width: 250, height: 250)
-                .onAppear {
-                    withAnimation(
-                        Animation.easeInOut(duration: 2.0)
-                            .repeatForever(autoreverses: true)
-                    ) {
-                        animationScale = 1.2
-                    }
-                    
-                    // Set up repository when view appears
-                    nfcReader.setRepository(amiiboRepository)
-                }
-                .onDisappear {
-                    // Stop NFC scanning when view disappears
-                    nfcReader.stopScanning()
+                        .frame(width: 250, height: 250)
+                        .padding(.bottom, 10) // Add bottom spacing to image
+                        .onAppear {
+                            // Set up repository when view appears
+                            nfcReader.setRepository(amiiboRepository)
+                        }
                 }
                 
                 // Check if scanner is purchased
@@ -98,7 +113,7 @@ struct AmiiboScannerView: View {
                     .multilineTextAlignment(.center)
                     .lineSpacing(4)
                     .padding(.horizontal, 40)
-                    .padding(.top, 20) // Reduced padding to bring text closer
+                    .padding(.top, 8) // Reduced spacing
                 
                 
                 // Scan Button
@@ -123,7 +138,7 @@ struct AmiiboScannerView: View {
                             .fill(nfcReader.isScanning ? Color.gray : Color.appRed)
                     )
                 }
-                .padding(.top, 20)
+                .padding(.top, 8) // Reduced spacing
                 } else {
                     // Show purchase button if not purchased
                     Text("Enable NFC Scanning")
@@ -132,21 +147,21 @@ struct AmiiboScannerView: View {
                         .multilineTextAlignment(.center)
                         .lineSpacing(4)
                         .padding(.horizontal, 40)
-                        .padding(.top, 20)
+                        .padding(.top, 8) // Reduced spacing
                     
-                    Text("Purchase the scanner feature to read your Amiibo figures")
+                    Text("Scan your Amiibo figures and get all the details instantaneously. Simply tap your Amiibo to the back of your phone to unlock character information, game compatibility, and more.")
                         .font(.system(size: 14, weight: .regular))
                         .foregroundColor(themeManager.isDarkMode ? .white.opacity(0.7) : .gray)
                         .multilineTextAlignment(.center)
                         .lineSpacing(4)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, 40)
-                        .padding(.top, 10)
+                        .padding(.top, 5) // Reduced spacing
                     
                     Button(action: {
                         Task {
                             await purchaseManager.makeAmiiboScanPurchase()
-                            analyticsService.logEvent(AnalyticsService.AMIIBO_SCANNER_SCREEN_OPENED, name: "purchase_scanner_clicked")
+                            analyticsService.logEvent(AnalyticsService.AMIIBO_ENABLE_SCANNER, name: "enable_scanner_button_clicked")
                         }
                     }) {
                         HStack {
@@ -163,7 +178,7 @@ struct AmiiboScannerView: View {
                                 .fill(Color.appRed)
                         )
                     }
-                    .padding(.top, 20)
+                    .padding(.top, 8) // Reduced spacing
                 }
                 
                 Spacer() // Push content up
@@ -207,7 +222,7 @@ struct AmiiboScannerView: View {
                 if showingAmiiboDetails, let amiibo = scannedAmiibo {
                     // Suppress deprecation warning for NavigationLink
                     NavigationLink(
-                        destination: AmiiboDetailsView(amiibo: amiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented),
+                        destination: AmiiboDetailsView(amiibo: amiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented, amiiboList: nil),
                         isActive: $showingAmiiboDetails
                     ) {
                         EmptyView()

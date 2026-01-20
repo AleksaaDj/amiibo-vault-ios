@@ -67,7 +67,7 @@ struct AmiiboSeriesView: View {
         )) {
             if let amiibo = selectedAmiibo {
                 NavigationView {
-                    AmiiboDetailsView(amiibo: amiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)
+                    AmiiboDetailsView(amiibo: amiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented, amiiboList: seriesAmiibos)
                 }
                 .navigationViewStyle(StackNavigationViewStyle())
             }

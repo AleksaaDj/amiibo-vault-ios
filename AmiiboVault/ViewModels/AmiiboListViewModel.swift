@@ -10,6 +10,8 @@ class AmiiboListViewModel: ObservableObject {
     @Published var featuredAmiibo: Amiibo?
     @Published var isLoading = false
     @Published var errorMessage: String?
+    @Published var showErrorAlert = false
+    @Published var errorAlertMessage = ""
     @Published var searchText = ""
     @Published var isGridView = false
     @Published var sortType: String?
@@ -25,9 +27,12 @@ class AmiiboListViewModel: ObservableObject {
     private var lastRefreshTime: Date?
     
     init() {
+        print("========== VIEWMODEL INIT ==========")
+        print("🔵 AmiiboListViewModel: init() called")
         setupSearchPublisher()
         if !hasInitialized {
             hasInitialized = true
+            print("🔵 AmiiboListViewModel: Calling loadAmiibos() from init")
             loadAmiibos()
         }
     }
@@ -44,6 +49,8 @@ class AmiiboListViewModel: ObservableObject {
     
     // MARK: - Data Loading (Database-First Approach - Android Pattern)
     func loadAmiibos() {
+        NSLog("🔵 AmiiboListViewModel: loadAmiibos() called")
+        print("🔵 AmiiboListViewModel: loadAmiibos() called")
         
         // Always load from database first (like Android)
         loadFromDatabase()
@@ -80,6 +87,9 @@ class AmiiboListViewModel: ObservableObject {
             sortType: sortType
         )
         
+        print("========== DATABASE CHECK ==========")
+        print("🔵 AmiiboListViewModel: Found \(localAmiibos.count) items in database")
+        
         // Update UI instantly
         amiiboList = localAmiibos
         filteredAmiiboList = localAmiibos
@@ -95,6 +105,7 @@ class AmiiboListViewModel: ObservableObject {
         // Load featured Amiibo from API on every start (changes frequently)
         if !hasCheckedAPI {
             hasCheckedAPI = true
+            print("🔵 AmiiboListViewModel: Calling syncWithAPIInBackground with count: \(localAmiibos.count)")
             syncWithAPIInBackground(localCount: localAmiibos.count)
             
             // If we have local data, load featured Amiibo immediately
@@ -132,12 +143,41 @@ class AmiiboListViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
         
+        NSLog("🔵 AmiiboListViewModel: loadFromAPI() called - about to fetch amiibo list")
+        print("🔵 AmiiboListViewModel: loadFromAPI() called - about to fetch amiibo list")
+        
         networkService.fetchAmiiboList()
             .sink(
                 receiveCompletion: { [weak self] completion in
                     self?.isLoading = false
                     if case .failure(let error) = completion {
-                        self?.errorMessage = error.localizedDescription
+                        var errorDesc = error.localizedDescription
+                        
+                        // Get more detailed error if available
+                        if let detailedError = error as? LocalizedError {
+                            errorDesc = detailedError.errorDescription ?? errorDesc
+                        }
+                        
+                        // Also check for underlying error
+                        if let nsError = error as NSError? {
+                            errorDesc += "\n\nDomain: \(nsError.domain)\nCode: \(nsError.code)"
+                            if let underlyingError = nsError.userInfo[NSUnderlyingErrorKey] as? Error {
+                                errorDesc += "\nUnderlying: \(underlyingError.localizedDescription)"
+                            }
+                        }
+                        
+                        NSLog("❌ AmiiboListViewModel: loadFromAPI() failed: \(errorDesc)")
+                        print("❌ AmiiboListViewModel: loadFromAPI() failed: \(errorDesc)")
+                        self?.errorMessage = errorDesc
+                        
+                        // Show alert with detailed error - force on main thread
+                        DispatchQueue.main.async {
+                            self?.errorAlertMessage = "Failed to load Amiibo data:\n\n\(errorDesc)\n\nError type: \(type(of: error))"
+                            self?.showErrorAlert = true
+                            print("🔵 Setting showErrorAlert = true, message: \(self?.errorAlertMessage ?? "nil")")
+                        }
+                    } else {
+                        NSLog("✅ AmiiboListViewModel: loadFromAPI() succeeded")
                     }
                 },
                 receiveValue: { [weak self] response in
@@ -182,12 +222,15 @@ class AmiiboListViewModel: ObservableObject {
     
     private func syncWithAPIInBackground(localCount: Int) {
         // Background sync - doesn't block UI
+        NSLog("🔵 AmiiboListViewModel: syncWithAPIInBackground() called with localCount: \(localCount)")
         DispatchQueue.global(qos: .background).async { [weak self] in
             guard let self = self else { return }
             
             // Only check API if we have local data
             guard localCount > 0 else {
                 // No local data, load from API normally
+                print("========== NO LOCAL DATA - CALLING API ==========")
+                print("🔵 AmiiboListViewModel: No local data, calling loadFromAPI()")
                 DispatchQueue.main.async {
                     self.loadFromAPI()
                 }
@@ -196,15 +239,21 @@ class AmiiboListViewModel: ObservableObject {
             
             // Check if we should refresh (every 5 minutes)
             guard self.shouldRefreshData() else {
+                NSLog("🔵 AmiiboListViewModel: Should not refresh data yet")
                 return
             }
             
             // Quick API check to see if there are new Amiibos
+            NSLog("🔵 AmiiboListViewModel: Calling networkService.fetchAmiiboList() in background")
             self.networkService.fetchAmiiboList()
                 .sink(
                     receiveCompletion: { completion in
-                        if case .failure(_) = completion {
+                        if case .failure(let error) = completion {
                             // API failed, but we have local data so continue silently
+                            NSLog("❌ AmiiboListViewModel: API failed in syncWithAPIInBackground: \(error.localizedDescription)")
+                            print("❌ AmiiboListViewModel: API failed in syncWithAPIInBackground: \(error.localizedDescription)")
+                        } else {
+                            NSLog("✅ AmiiboListViewModel: API succeeded in syncWithAPIInBackground")
                         }
                     },
                     receiveValue: { response in
@@ -592,16 +641,16 @@ class AmiiboListViewModel: ObservableObject {
     }
     
     // MARK: - Collection Image Generation
-    func createAndDownloadCompositeImage(completion: @escaping (Bool) -> Void) {
+    func createAndDownloadCompositeImage(isWishlist: Bool = false, completion: @escaping (Bool) -> Void) {
         
-        let collectionAmiibos = coreDataService.getCollectionAmiibos()
-        if collectionAmiibos.isEmpty {
+        let amiiboList = isWishlist ? wishlistAmiibos : collectionAmiibos
+        if amiiboList.isEmpty {
             completion(false)
             return
         }
         
         let compositeHelper = CompositeImageHelper()
-        compositeHelper.createAndSaveCompositeImage(amiiboList: collectionAmiibos) { success in
+        compositeHelper.createAndSaveCompositeImage(amiiboList: amiiboList) { success in
             DispatchQueue.main.async {
                 completion(success)
             }

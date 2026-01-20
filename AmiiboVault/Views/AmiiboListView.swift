@@ -93,6 +93,13 @@ struct AmiiboListView: View {
                     .tint(.red)
                 }
                 .padding()
+                .onAppear {
+                    // Trigger alert when error appears if not already shown
+                    if !viewModel.showErrorAlert {
+                        viewModel.errorAlertMessage = viewModel.errorMessage ?? "Error loading data"
+                        viewModel.showErrorAlert = true
+                    }
+                }
                 Spacer()
             } else if viewModel.filteredAmiiboList.isEmpty {
                 Spacer()
@@ -127,7 +134,14 @@ struct AmiiboListView: View {
             
             // Log screen view
             analyticsService.logScreenView("search_screen", screenClass: "AmiiboListView")
-            analyticsService.logEvent(AnalyticsService.AMIIBO_SEARCH_SCREEN_OPENED)
+        }
+        .alert("Error Loading Data", isPresented: $viewModel.showErrorAlert) {
+            Button("OK", role: .cancel) { }
+            Button("Retry") {
+                viewModel.loadAmiibos()
+            }
+        } message: {
+            Text(viewModel.errorAlertMessage)
         }
         .background(
             // Hidden NavigationLink that gets triggered by state
@@ -135,7 +149,7 @@ struct AmiiboListView: View {
                 if let selectedAmiibo = selectedAmiiboForDetails {
                     // Suppress deprecation warning for NavigationLink
                     NavigationLink(
-                        destination: AmiiboDetailsView(amiibo: selectedAmiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented),
+                        destination: AmiiboDetailsView(amiibo: selectedAmiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented, amiiboList: viewModel.filteredAmiiboList),
                         isActive: $showingDetails
                     ) {
                         EmptyView()

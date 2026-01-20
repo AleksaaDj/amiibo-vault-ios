@@ -138,6 +138,8 @@ struct AmiiboDetailsKingfisherImage: View {
             .onFailure { _ in
                 // Handle failure if needed
             }
+            .fade(duration: 0.15) // Smooth fade for better visual transitions
+            .loadDiskFileSynchronously() // Load from disk cache synchronously for immediate display
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(width: width, height: height)

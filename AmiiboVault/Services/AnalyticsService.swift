@@ -28,6 +28,7 @@ class AnalyticsService: ObservableObject {
     
     // Scanner Screen
     static let AMIIBO_SCANNER_SCREEN_OPENED = "scanner_screen_opened_ios"
+    static let AMIIBO_ENABLE_SCANNER = "enable_scanner_clicked_ios"
     
     // Games Screen
     static let AMIIBO_GAMES_SCREEN_OPENED = "games_screen_opened_ios"

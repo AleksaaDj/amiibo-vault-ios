@@ -39,15 +39,19 @@ struct Amiibo: Codable, Identifiable, Hashable {
     
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        amiiboSeries = try container.decode(String.self, forKey: .amiiboSeries)
-        character = try container.decode(String.self, forKey: .character)
-        gameSeries = try container.decode(String.self, forKey: .gameSeries)
-        head = try container.decode(String.self, forKey: .head)
-        image = try container.decode(String.self, forKey: .image)
-        name = try container.decode(String.self, forKey: .name)
+        
+        // Decode required fields - use decodeIfPresent for optional handling
+        amiiboSeries = try container.decodeIfPresent(String.self, forKey: .amiiboSeries) ?? ""
+        character = try container.decodeIfPresent(String.self, forKey: .character) ?? ""
+        gameSeries = try container.decodeIfPresent(String.self, forKey: .gameSeries) ?? ""
+        head = try container.decodeIfPresent(String.self, forKey: .head) ?? ""
+        image = try container.decodeIfPresent(String.self, forKey: .image) ?? ""
+        name = try container.decodeIfPresent(String.self, forKey: .name) ?? ""
         release = try container.decodeIfPresent(Release.self, forKey: .release)
-        tail = try container.decode(String.self, forKey: .tail)
-        type = try container.decode(String.self, forKey: .type)
+        tail = try container.decodeIfPresent(String.self, forKey: .tail) ?? ""
+        type = try container.decodeIfPresent(String.self, forKey: .type) ?? ""
+        
+        // Set default values for fields not in JSON
         featured = false
         color = 0
         isInCollection = false
@@ -127,11 +131,16 @@ struct Game: Codable, Identifiable, Hashable {
     
     enum CodingKeys: String, CodingKey {
         case id, name
-        case backgroundImage = "background_image"
+        case backgroundImage = "background_image"  // Maps JSON "background_image" to Swift "backgroundImage"
         case genres, metacritic, platforms, rating
         case ratingsCount = "ratings_count"
         case released, slug
         case shortScreenshots = "short_screenshots"
+    }
+    
+    // Custom decoder to debug issues
+    private enum DecodingError: Error {
+        case missingKey(String)
     }
     
     init(id: Int, name: String?, backgroundImage: String?, genres: [Genre]?, metacritic: Int?, platforms: [Platform]?, rating: Double?, ratingsCount: Int?, released: String?, slug: String?, shortScreenshots: [Screenshot]?) {
@@ -222,7 +231,7 @@ struct GamesListResponse: Codable {
 }
 
 // MARK: - Amiibo Games (for compatibility)
-struct AmiiboGames: Codable, Identifiable, Hashable {
+struct AmiiboGames: Identifiable, Hashable {
     let id = UUID()
     let amiiboSeries: String
     let character: String
@@ -236,53 +245,38 @@ struct AmiiboGames: Codable, Identifiable, Hashable {
     let release: Release
     let tail: String
     let type: String
-    
-    enum CodingKeys: String, CodingKey {
-        case amiiboSeries, character, gameSeries, games3DS, gamesSwitch, gamesWiiU, head, image, name, release, tail, type
-    }
 }
 
-struct Games3DS: Codable, Hashable {
+struct Games3DS: Hashable {
     let amiiboUsage: [AmiiboUsage]
     let gameID: [String]
     let gameName: String
-    
-    enum CodingKeys: String, CodingKey {
-        case amiiboUsage
-        case gameID = "gameID"
-        case gameName
-    }
 }
 
-struct GamesSwitch: Codable, Hashable {
+struct GamesSwitch: Hashable {
     let amiiboUsage: [AmiiboUsage]
     let gameID: [String]
     let gameName: String
-    
-    enum CodingKeys: String, CodingKey {
-        case amiiboUsage
-        case gameID = "gameID"
-        case gameName
-    }
 }
 
-struct GamesWiiU: Codable, Hashable {
+struct GamesWiiU: Hashable {
     let amiiboUsage: [AmiiboUsage]
     let gameID: [String]
     let gameName: String
-    
-    enum CodingKeys: String, CodingKey {
-        case amiiboUsage
-        case gameID = "gameID"
-        case gameName
-    }
 }
 
-struct AmiiboUsage: Codable, Hashable {
+struct AmiiboUsage: Hashable {
     let usage: String
     let write: Bool
+    
+    // Remove Codable - we're manually parsing, so we don't need it
+    // This prevents any accidental Codable encoding/decoding
+    init(usage: String, write: Bool) {
+        self.usage = usage
+        self.write = write
+    }
 }
 
-struct Games: Codable {
+struct Games: Hashable {
     let amiibo: [AmiiboGames]
 }

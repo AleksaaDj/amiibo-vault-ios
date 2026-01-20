@@ -10,6 +10,8 @@ struct CollectionView: View {
     @State private var selectedSet: String?
     @State private var selectedSort: String?
     @State private var showingSupport = false
+    @State private var showingImageDialog = false
+    @State private var showingSuccessAlert = false
     @StateObject private var adMobService = AdMobService.shared
     @StateObject private var orientationManager = OrientationManager()
     @StateObject private var analyticsService = AnalyticsService.shared
@@ -57,7 +59,7 @@ struct CollectionView: View {
                     Button(action: {
                         showingSupport = true
                     }) {
-                        Image(systemName: "heart.fill")
+                        Image(systemName: "questionmark.circle.fill")
                             .font(.title2)
                             .foregroundColor(.appRed)
                     }
@@ -169,8 +171,8 @@ struct CollectionView: View {
                         GridItem(.flexible()),
                         GridItem(.flexible())
                     ], spacing: 12) {
-                        ForEach(currentAmiiboList) { amiibo in
-                            CollectionGridItem(amiibo: amiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)
+                        ForEach(Array(currentAmiiboList.enumerated()), id: \.element.id) { index, amiibo in
+                            CollectionGridItem(amiibo: amiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented, amiiboList: currentAmiiboList)
                         }
                     }
                     .padding(.horizontal, 20)
@@ -189,6 +191,32 @@ struct CollectionView: View {
         }
         .sheet(isPresented: $showingSupport) {
             SupportView()
+        }
+        .sheet(isPresented: $showingImageDialog) {
+            CollectionImageDialog(
+                isWishlist: selectedTab == 1,
+                onDismiss: {
+                    showingImageDialog = false
+                },
+                onConfirm: {
+                    viewModel.createAndDownloadCompositeImage(isWishlist: selectedTab == 1) { success in
+                        DispatchQueue.main.async {
+                            if success {
+                                showingSuccessAlert = true
+                                analyticsService.logEvent(AnalyticsService.AMIIBO_IMAGE_DOWNLOAD_CONFIRMED, name: "image_download_confirmed")
+                            }
+                        }
+                    }
+                    showingImageDialog = false
+                }
+            )
+        }
+        .alert("Success!", isPresented: $showingSuccessAlert) {
+            Button("OK") {
+                showingSuccessAlert = false
+            }
+        } message: {
+            Text(selectedTab == 1 ? "Your wishlist image has been successfully saved to your Photos library!" : "Your collection image has been successfully saved to your Photos library!")
         }
     }
     
@@ -316,10 +344,11 @@ struct CollectionGridItem: View {
     let amiibo: Amiibo
     let viewModel: AmiiboListViewModel
     @Binding var isDetailsPresented: Bool
+    let amiiboList: [Amiibo]
     @StateObject private var themeManager = ThemeManager.shared
     
     var body: some View {
-        NavigationLink(destination: AmiiboDetailsView(amiibo: amiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)) {
+        NavigationLink(destination: AmiiboDetailsView(amiibo: amiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented, amiiboList: amiiboList)) {
             VStack(spacing: 8) {
                 SeriesGridKingfisherImage(url: amiibo.image, width: 114, height: 114, cornerRadius: 8, shadowRadius: 8)
                     .padding(.vertical, 5) // Add padding to show full shadow
@@ -418,16 +447,14 @@ struct CollectionFilterControlsView: View {
             
             Spacer()
             
-            // Download Image Button - Only show on collection tab (selectedTab == 0)
-            if selectedTab == 0 {
-                Button(action: {
-                    showingImageDialog = true
-                    analyticsService.logEvent(AnalyticsService.AMIIBO_IMAGE_DOWNLOAD, name: "image_download_dialog_opened")
-                }) {
-                    Image(systemName: "arrow.down.circle")
-                        .font(.system(size: 20, weight: .regular))
-                        .foregroundColor(.appRed)
-                }
+            // Download Image Button
+            Button(action: {
+                showingImageDialog = true
+                analyticsService.logEvent(AnalyticsService.AMIIBO_IMAGE_DOWNLOAD, name: "image_download_dialog_opened")
+            }) {
+                Image(systemName: "arrow.down.circle")
+                    .font(.system(size: 20, weight: .regular))
+                    .foregroundColor(.appRed)
             }
         }
         .sheet(isPresented: $showingTypeOptions) {
@@ -441,11 +468,12 @@ struct CollectionFilterControlsView: View {
         }
         .sheet(isPresented: $showingImageDialog) {
             CollectionImageDialog(
+                isWishlist: selectedTab == 1,
                 onDismiss: {
                     showingImageDialog = false
                 },
                 onConfirm: {
-                    viewModel.createAndDownloadCompositeImage { success in
+                    viewModel.createAndDownloadCompositeImage(isWishlist: selectedTab == 1) { success in
                         DispatchQueue.main.async {
                             if success {
                                 showingSuccessAlert = true
@@ -462,7 +490,7 @@ struct CollectionFilterControlsView: View {
                 showingSuccessAlert = false
             }
         } message: {
-            Text("Your collection image has been successfully saved to your Photos library!")
+            Text(selectedTab == 1 ? "Your wishlist image has been successfully saved to your Photos library!" : "Your collection image has been successfully saved to your Photos library!")
         }
         .onChange(of: showingSuccessAlert) { newValue in
             if !newValue && !PurchaseManager.shared.isNoAdsPurchased {
@@ -605,6 +633,7 @@ struct CollectionSortFilterView: View {
 }
 
 struct CollectionImageDialog: View {
+    let isWishlist: Bool
     let onDismiss: () -> Void
     let onConfirm: () -> Void
     @StateObject private var themeManager = ThemeManager.shared
@@ -618,13 +647,13 @@ struct CollectionImageDialog: View {
             VStack(spacing: 0) {
                 // Header with red background
                 VStack(spacing: 16) {
-                    Text("Collection Image")
+                    Text(isWishlist ? "Wishlist Image" : "Collection Image")
                         .font(.system(size: 24, weight: .bold))
                         .foregroundColor(.white)
                         .padding(.top, 15)
                         .padding(.bottom, 16)
                     
-                    Text("The image will be generated using your current collection and will be saved to your local storage, making it easy for you to share with others or creating post in community collection!")
+                    Text(isWishlist ? "The image will be generated using your current wishlist and will be saved to your local storage, making it easy for you to share with others or creating post in community collection!" : "The image will be generated using your current collection and will be saved to your local storage, making it easy for you to share with others or creating post in community collection!")
                         .font(.system(size: 16, weight: .regular))
                         .foregroundColor(.white)
                         .multilineTextAlignment(.center)

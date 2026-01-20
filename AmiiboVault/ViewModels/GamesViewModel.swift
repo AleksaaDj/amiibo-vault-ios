@@ -75,13 +75,25 @@ class GamesViewModel: ObservableObject {
             // No local data, fetch from API
             fetchGamesFromAPI()
         } else {
-            // Use local data and sort by name
-            let sortedGames = localGames.sorted { ($0.name ?? "") < ($1.name ?? "") }
-            games = sortedGames
-            filteredGames = sortedGames
+            // Check if games have valid images (like Android - images should always be present)
+            let gamesWithMissingImages = localGames.filter { game in
+                guard let imageUrl = game.backgroundImage, !imageUrl.isEmpty else { return true }
+                return false
+            }
             
-            // Preload first few images before showing the list
-            preloadGameImages(sortedGames.prefix(10))
+            // If any games are missing images, re-fetch from API to ensure we have complete data
+            if !gamesWithMissingImages.isEmpty {
+                // Some games are missing images, re-fetch to get complete data
+                fetchGamesFromAPI()
+            } else {
+                // Use local data and sort by name
+                let sortedGames = localGames.sorted { ($0.name ?? "") < ($1.name ?? "") }
+                games = sortedGames
+                filteredGames = sortedGames
+                
+                // Preload first few images before showing the list
+                preloadGameImages(sortedGames.prefix(10))
+            }
         }
     }
     

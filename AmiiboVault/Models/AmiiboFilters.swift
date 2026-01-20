@@ -7,6 +7,7 @@ struct AmiiboFilters {
         "BoxBoy!",
         "Chibi-Robo",
         "Diablo",
+        "Donkey Kong",
         "Fire Emblem",
         "Kirby",
         "Legend Of Zelda",
@@ -15,6 +16,7 @@ struct AmiiboFilters {
         "Metroid",
         "Monster Hunter",
         "Monster Hunter Rise",
+        "My Mario Wooden Block",
         "Pikmin",
         "Pokemon",
         "Power Pros",
@@ -32,7 +34,7 @@ struct AmiiboFilters {
     ]
     
     static let types = [
-        "Figure", "Card", "Yarn", "Band"
+        "Figure", "Card", "Yarn", "Band", "Block"
     ]
     
     static let sortTypesSearch = [

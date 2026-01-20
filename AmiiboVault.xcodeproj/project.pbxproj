@@ -22,6 +22,7 @@
 		0147B69F2E96F3D20037DE10 /* FirebaseStorageCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = 0147B69E2E96F3D20037DE10 /* FirebaseStorageCombine-Community */; };
 		01B615912E9C4EB500D7D187 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 01B615902E9C4EB500D7D187 /* Kingfisher */; };
 		01D3F20F2E998A4D00BCA5D4 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = 01D3F20E2E998A4D00BCA5D4 /* GoogleMobileAds */; };
+		01FB00032E9C4EB500D7D187 /* FacebookCore in Frameworks */ = {isa = PBXBuildFile; productRef = 01FB00022E9C4EB500D7D187 /* FacebookCore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -41,6 +42,18 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		01F73CB52F1D5D5E00560C9A /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		012D9DBF2E9683D900C77CE1 /* AmiiboVault.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AmiiboVault.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		012D9DD12E9683DA00C77CE1 /* AmiiboVaultTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AmiiboVaultTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -56,6 +69,10 @@
 			target = 012D9DBE2E9683D900C77CE1 /* AmiiboVault */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+/* Removed JSON files from Copy Files phase - they're included automatically by file system synchronized group */
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		012D9DC12E9683D900C77CE1 /* AmiiboVault */ = {
@@ -98,6 +115,7 @@
 				0147B6912E96F3D20037DE10 /* FirebaseCore in Frameworks */,
 				0147B6952E96F3D20037DE10 /* FirebaseDatabase in Frameworks */,
 				0147B6812E96F16E0037DE10 /* FirebaseAI in Frameworks */,
+				01FB00032E9C4EB500D7D187 /* FacebookCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -148,6 +166,7 @@
 				012D9DBB2E9683D900C77CE1 /* Sources */,
 				012D9DBC2E9683D900C77CE1 /* Frameworks */,
 				012D9DBD2E9683D900C77CE1 /* Resources */,
+				01F73CB52F1D5D5E00560C9A /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -173,6 +192,7 @@
 				0147B69E2E96F3D20037DE10 /* FirebaseStorageCombine-Community */,
 				01D3F20E2E998A4D00BCA5D4 /* GoogleMobileAds */,
 				01B615902E9C4EB500D7D187 /* Kingfisher */,
+				01FB00022E9C4EB500D7D187 /* FacebookCore */,
 			);
 			productName = AmiiboVault;
 			productReference = 012D9DBF2E9683D900C77CE1 /* AmiiboVault.app */;
@@ -232,7 +252,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2600;
-				LastUpgradeCheck = 2600;
+				LastUpgradeCheck = 2620;
 				TargetAttributes = {
 					012D9DBE2E9683D900C77CE1 = {
 						CreatedOnToolsVersion = 26.0.1;
@@ -260,6 +280,7 @@
 				0147B67F2E96F16E0037DE10 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				01D3F20D2E998A4D00BCA5D4 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
 				01B6158F2E9C4EB500D7D187 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				01FB00012E9C4EB500D7D187 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 012D9DC02E9683D900C77CE1 /* Products */;
@@ -393,6 +414,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -449,6 +471,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -462,7 +485,7 @@
 				"CODE_SIGN_ENTITLEMENTS[sdk=*]" = AmiiboVault/AmiiboVault.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 6NUJ7T376K;
 				ENABLE_PREVIEWS = YES;
@@ -482,7 +505,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.5;
+				MARKETING_VERSION = 2.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.softwavegamess.AmiiboVaultApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -504,7 +527,7 @@
 				"CODE_SIGN_ENTITLEMENTS[sdk=*]" = AmiiboVault/AmiiboVault.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 6NUJ7T376K;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -523,7 +546,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.5;
+				MARKETING_VERSION = 2.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.softwavegamess.AmiiboVaultApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -545,7 +568,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0.5;
+				MARKETING_VERSION = 2.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.softwavegamess.AmiiboVaultTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -566,7 +589,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0.5;
+				MARKETING_VERSION = 2.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.softwavegamess.AmiiboVaultTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -585,7 +608,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0.5;
+				MARKETING_VERSION = 2.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.softwavegamess.AmiiboVaultUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -604,7 +627,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0.5;
+				MARKETING_VERSION = 2.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.softwavegamess.AmiiboVaultUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
@@ -681,6 +704,14 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 12.12.0;
+			};
+		};
+		01FB00012E9C4EB500D7D187 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/facebook/facebook-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 18.0.1;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -760,6 +791,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 01D3F20D2E998A4D00BCA5D4 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
 			productName = GoogleMobileAds;
+		};
+		01FB00022E9C4EB500D7D187 /* FacebookCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 01FB00012E9C4EB500D7D187 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */;
+			productName = FacebookCore;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

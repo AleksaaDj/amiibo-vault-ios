@@ -5,29 +5,254 @@ struct AmiiboDetailsView: View {
     let amiibo: Amiibo
     @ObservedObject var viewModel: AmiiboListViewModel
     @Binding var isDetailsPresented: Bool
+    let amiiboList: [Amiibo]?
     @Environment(\.dismiss) private var dismiss
     @State private var showingSeriesView = false
     @State private var showingCompatibilityView = false
+    @State private var currentIndex: Int = 0
+    @State private var isInitialLoad = true
+    @State private var cachedUpdatedList: [Amiibo]? = nil
     @StateObject private var themeManager = ThemeManager.shared
     @StateObject private var adMobService = AdMobService.shared
     @StateObject private var analyticsService = AnalyticsService.shared
     @StateObject private var purchaseManager = PurchaseManager.shared
     
-    // Get the updated amiibo data from the view model
+    // Initialize with optional list
+    init(amiibo: Amiibo, viewModel: AmiiboListViewModel, isDetailsPresented: Binding<Bool>, amiiboList: [Amiibo]? = nil) {
+        self.amiibo = amiibo
+        self.viewModel = viewModel
+        self._isDetailsPresented = isDetailsPresented
+        self.amiiboList = amiiboList
+        
+        // Calculate initial index if list is provided
+        if let list = amiiboList, let index = list.firstIndex(where: { $0.head == amiibo.head && $0.tail == amiibo.tail }) {
+            self._currentIndex = State(initialValue: index)
+        }
+    }
+    
+    // Get the current amiibo from the list or fallback to the passed amiibo
     private var currentAmiibo: Amiibo {
-        viewModel.filteredAmiiboList.first { $0.head == amiibo.head && $0.tail == amiibo.tail } ?? amiibo
+        if let list = amiiboList, currentIndex < list.count {
+            // Use pre-computed updated list for better performance
+            let updatedList = computeUpdatedAmiiboList(list)
+            if currentIndex < updatedList.count {
+                return updatedList[currentIndex]
+            }
+            return list[currentIndex]
+        }
+        // Fallback to original behavior
+        return viewModel.filteredAmiiboList.first { $0.head == amiibo.head && $0.tail == amiibo.tail } ?? amiibo
+    }
+    
+    // Pre-compute updated amiibo list to avoid expensive lookups during rendering
+    private func computeUpdatedAmiiboList(_ list: [Amiibo]) -> [Amiibo] {
+        // Create a dictionary for O(1) lookup instead of O(n) for each item
+        let filteredDict = Dictionary(uniqueKeysWithValues: viewModel.filteredAmiiboList.map { amiibo in
+            (amiibo.head + amiibo.tail, amiibo)
+        })
+        
+        return list.map { item in
+            let key = item.head + item.tail
+            return filteredDict[key] ?? item
+        }
+    }
+    
+    // Helper to get current amiibo from list for toolbar
+    private func getCurrentAmiiboFromList(_ list: [Amiibo]) -> Amiibo {
+        if currentIndex < list.count {
+            let item = list[currentIndex]
+            // Get updated data from view model
+            return viewModel.filteredAmiiboList.first { $0.head == item.head && $0.tail == item.tail } ?? item
+        }
+        return amiibo
+    }
+    
+    // Computed property for updated list (doesn't modify state)
+    private var updatedList: [Amiibo] {
+        guard let list = amiiboList, list.count > 1 else { return [] }
+        if let cached = cachedUpdatedList {
+            return cached
+        }
+        return computeUpdatedAmiiboList(list)
+    }
+    
+    var body: some View {
+        // Use TabView for swipe navigation if list is provided and has more than one item
+        if let list = amiiboList, list.count > 1 {
+            ZStack {
+                // Background that extends behind tab bar to prevent white space
+                (themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(red: 1.0, green: 0.984, blue: 0.996))
+                    .ignoresSafeArea(.container, edges: .bottom)
+                
+                TabView(selection: $currentIndex) {
+                    ForEach(Array(updatedList.enumerated()), id: \.element.id) { index, updatedAmiibo in
+                        AmiiboDetailContent(
+                            amiibo: updatedAmiibo,
+                            viewModel: viewModel,
+                            isDetailsPresented: $isDetailsPresented,
+                            showingSeriesView: $showingSeriesView,
+                            showingCompatibilityView: $showingCompatibilityView,
+                            shouldHandleAds: false // Ads handled at TabView level
+                        )
+                        .tag(index)
+                        .id(updatedAmiibo.id) // Help SwiftUI optimize rendering
+                    }
+                }
+                .tabViewStyle(.page)
+                .indexViewStyle(.page(backgroundDisplayMode: .always))
+            }
+            .onAppear {
+                // Cache the updated list when view appears (not during body evaluation)
+                if cachedUpdatedList == nil, let list = amiiboList, list.count > 1 {
+                    cachedUpdatedList = computeUpdatedAmiiboList(list)
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationTitle("")
+            .toolbarBackground(themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(red: 1.0, green: 0.984, blue: 0.996), for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        openAmazonLink(for: currentAmiibo)
+                        analyticsService.logEvent(AnalyticsService.AMIIBO_AMAZON, id: currentAmiibo.head + currentAmiibo.tail, name: currentAmiibo.name)
+                    }) {
+                        Image(systemName: "cart")
+                            .foregroundColor(.appRed)
+                            .font(.system(size: 16, weight: .medium))
+                    }
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        // Haptic feedback for wishlist action
+                        HapticManager.shared.lightImpact()
+                        let isAdding = !currentAmiibo.isInWishlist
+                        viewModel.toggleWishlist(currentAmiibo)
+                        let action = currentAmiibo.isInWishlist ? "remove_from_wishlist" : "add_to_wishlist"
+                        if isAdding {
+                            // Success haptic when adding to wishlist
+                            HapticManager.shared.success()
+                        }
+                        analyticsService.logEvent(AnalyticsService.AMIIBO_ADD_WISHLIST, id: currentAmiibo.head + currentAmiibo.tail, name: action)
+                    }) {
+                        Image(systemName: currentAmiibo.isInWishlist ? "bookmark.fill" : "bookmark")
+                            .foregroundColor(.appRed)
+                            .font(.system(size: 16, weight: .medium))
+                    }
+                }
+            }
+            .onChange(of: currentIndex) { newIndex in
+                // Log analytics when swiping to a new amiibo
+                if newIndex < updatedList.count {
+                    let switchedAmiibo = updatedList[newIndex]
+                    analyticsService.logEvent(AnalyticsService.AMIIBO_DETAILS_OPENED, id: switchedAmiibo.head + switchedAmiibo.tail, name: switchedAmiibo.name)
+                    
+                    // Increment ad counter when swiping (skip initial load)
+                    if !isInitialLoad && !purchaseManager.isNoAdsPurchased {
+                        adMobService.showInterstitialAd {
+                            // Ad dismissed or not shown
+                        }
+                    }
+                    isInitialLoad = false
+                }
+            }
+            .onAppear {
+                // Pre-compute and cache the updated list
+                if cachedUpdatedList == nil {
+                    cachedUpdatedList = computeUpdatedAmiiboList(list)
+                }
+                
+                // Handle ad for initial load
+                if !purchaseManager.isNoAdsPurchased {
+                    adMobService.showInterstitialAd {
+                        // Ad dismissed or not shown
+                    }
+                }
+                isInitialLoad = false
+            }
+            .onChange(of: viewModel.filteredAmiiboList) { _ in
+                // Clear cache when filtered list changes (e.g., collection status updated)
+                cachedUpdatedList = nil
+            }
+            .sheet(isPresented: $showingSeriesView) {
+                AmiiboSeriesView(gameSeries: currentAmiibo.gameSeries, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)
+            }
+            .fullScreenCover(isPresented: $showingCompatibilityView) {
+                AmiiboCompatibilityView(amiibo: currentAmiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)
+            }
+        } else {
+            // Single item view (original behavior)
+            AmiiboDetailContent(
+                amiibo: currentAmiibo,
+                viewModel: viewModel,
+                isDetailsPresented: $isDetailsPresented,
+                showingSeriesView: $showingSeriesView,
+                showingCompatibilityView: $showingCompatibilityView
+            )
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationTitle("")
+            .sheet(isPresented: $showingSeriesView) {
+                AmiiboSeriesView(gameSeries: currentAmiibo.gameSeries, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)
+            }
+            .fullScreenCover(isPresented: $showingCompatibilityView) {
+                AmiiboCompatibilityView(amiibo: currentAmiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)
+            }
+        }
+    }
+    
+    func openAmazonLink(for amiibo: Amiibo) {
+        // Create Amazon search URL like Android implementation
+        let amiiboName = amiibo.name.replacingOccurrences(of: "&", with: " ")
+        let amiiboNameFiltered = amiiboName.replacingOccurrences(of: " ", with: "+")
+        let amiiboType = amiibo.type
+        let amiiboSeries = amiibo.gameSeries.replacingOccurrences(of: " ", with: "+")
+        
+        let amazonURL = "https://www.amazon.com/s?k=\(amiiboNameFiltered)+Amiibo+\(amiiboType)+\(amiiboSeries)&tag=amiibovault-20"
+        
+        if let url = URL(string: amazonURL) {
+            UIApplication.shared.open(url)
+        }
+    }
+    
+}
+
+// MARK: - Amiibo Detail Content (extracted for reuse)
+struct AmiiboDetailContent: View {
+    let amiibo: Amiibo
+    @ObservedObject var viewModel: AmiiboListViewModel
+    @Binding var isDetailsPresented: Bool
+    @Binding var showingSeriesView: Bool
+    @Binding var showingCompatibilityView: Bool
+    let shouldHandleAds: Bool // Flag to control ad handling
+    @Environment(\.dismiss) private var dismiss
+    @StateObject private var themeManager = ThemeManager.shared
+    @StateObject private var adMobService = AdMobService.shared
+    @StateObject private var analyticsService = AnalyticsService.shared
+    @StateObject private var purchaseManager = PurchaseManager.shared
+    @State private var showingSuccessAnimation = false
+    
+    init(amiibo: Amiibo, viewModel: AmiiboListViewModel, isDetailsPresented: Binding<Bool>, showingSeriesView: Binding<Bool>, showingCompatibilityView: Binding<Bool>, shouldHandleAds: Bool = true) {
+        self.amiibo = amiibo
+        self.viewModel = viewModel
+        self._isDetailsPresented = isDetailsPresented
+        self._showingSeriesView = showingSeriesView
+        self._showingCompatibilityView = showingCompatibilityView
+        self.shouldHandleAds = shouldHandleAds
     }
     
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
+            VStack(spacing: 0) {
                 // Amiibo Image
-                AmiiboDetailsKingfisherImage(url: currentAmiibo.image, width: 200, height: 200, cornerRadius: 8, shadowRadius: 10)
+                AmiiboDetailsKingfisherImage(url: amiibo.image, width: 200, height: 200, cornerRadius: 8, shadowRadius: 10)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(.top, 20)
                 
+                VStack(alignment: .leading, spacing: 20) {
+                
                 // Amiibo Name - Centered
-                Text(currentAmiibo.name)
+                Text(amiibo.name)
                     .font(.title)
                     .fontWeight(.bold)
                     .foregroundColor(themeManager.isDarkMode ? .white : .black)
@@ -38,31 +263,31 @@ struct AmiiboDetailsView: View {
                 // Details Section
                 VStack(spacing: 0) {
                     // Character
-                    DetailRow(label: "Character", value: currentAmiibo.character)
+                    DetailRow(label: "Character", value: amiibo.character)
                     
                     Divider()
                         .background(Color.gray.opacity(0.3))
                     
                     // Game Series
-                    DetailRow(label: "Game Series", value: currentAmiibo.gameSeries)
+                    DetailRow(label: "Game Series", value: amiibo.gameSeries)
                     
                     Divider()
                         .background(Color.gray.opacity(0.3))
                     
                     // Set
-                    DetailRow(label: "Set", value: currentAmiibo.amiiboSeries)
+                    DetailRow(label: "Set", value: amiibo.amiiboSeries)
                     
                     Divider()
                         .background(Color.gray.opacity(0.3))
                     
                     // Type
-                    DetailRow(label: "Type", value: currentAmiibo.type)
+                    DetailRow(label: "Type", value: amiibo.type)
                     
                     Divider()
                         .background(Color.gray.opacity(0.3))
                     
                     // Serial
-                    DetailRow(label: "Serial", value: currentAmiibo.head + currentAmiibo.tail)
+                    DetailRow(label: "Serial", value: amiibo.head + amiibo.tail)
                 }
                 .padding(.horizontal, 60)
                 
@@ -70,8 +295,12 @@ struct AmiiboDetailsView: View {
                 VStack(spacing: 0) {
                     // More from series button
                     Button(action: {
-                        showingSeriesView = true
-                        analyticsService.logEvent(AnalyticsService.AMIIBO_MORE, id: currentAmiibo.head + currentAmiibo.tail, name: "more_from_series")
+                        // Use DispatchQueue to ensure presentation happens after view update cycle
+                        // This prevents conflicts when TabView is initializing or transitioning
+                        DispatchQueue.main.async {
+                            showingSeriesView = true
+                        }
+                        analyticsService.logEvent(AnalyticsService.AMIIBO_MORE, id: amiibo.head + amiibo.tail, name: "more_from_series")
                     }) {
                         Text("more from series")
                             .font(.system(size: 13, weight: .regular))
@@ -85,8 +314,12 @@ struct AmiiboDetailsView: View {
                     
                     // Compatibility and usage button
                     Button(action: {
-                        showingCompatibilityView = true
-                        analyticsService.logEvent(AnalyticsService.AMIIBO_USAGE, id: currentAmiibo.head + currentAmiibo.tail, name: "compatibility_and_usage")
+                        // Use DispatchQueue to ensure presentation happens after view update cycle
+                        // This prevents conflicts when TabView is initializing or transitioning
+                        DispatchQueue.main.async {
+                            showingCompatibilityView = true
+                        }
+                        analyticsService.logEvent(AnalyticsService.AMIIBO_USAGE, id: amiibo.head + amiibo.tail, name: "compatibility_and_usage")
                     }) {
                         Text("compatibility and usage")
                             .font(.system(size: 13, weight: .semibold))
@@ -100,69 +333,87 @@ struct AmiiboDetailsView: View {
                     
                     // Add to collection button
                     Button(action: {
-                        if currentAmiibo.isInCollection {
-                            viewModel.removeFromCollection(currentAmiibo)
-                            analyticsService.logEvent(AnalyticsService.AMIIBO_ADD_COLLECTION, id: currentAmiibo.head + currentAmiibo.tail, name: "remove_from_collection")
+                        // Haptic feedback
+                        HapticManager.shared.lightImpact()
+                        
+                        if amiibo.isInCollection {
+                            viewModel.removeFromCollection(amiibo)
+                            analyticsService.logEvent(AnalyticsService.AMIIBO_ADD_COLLECTION, id: amiibo.head + amiibo.tail, name: "remove_from_collection")
                         } else {
-                            viewModel.addToCollection(currentAmiibo)
-                            analyticsService.logEvent(AnalyticsService.AMIIBO_ADD_COLLECTION, id: currentAmiibo.head + currentAmiibo.tail, name: "add_to_collection")
+                            viewModel.addToCollection(amiibo)
+                            // Success haptic and animation
+                            HapticManager.shared.success()
+                            showingSuccessAnimation = true
+                            analyticsService.logEvent(AnalyticsService.AMIIBO_ADD_COLLECTION, id: amiibo.head + amiibo.tail, name: "add_to_collection")
                         }
                     }) {
                         HStack(spacing: 8) {
-                            Image(systemName: currentAmiibo.isInCollection ? "minus.circle.fill" : "plus.circle.fill")
+                            Image(systemName: amiibo.isInCollection ? "minus.circle.fill" : "plus.circle.fill")
                                 .font(.system(size: 13, weight: .regular))
-                                .foregroundColor(.red)
-                            Text(currentAmiibo.isInCollection ? "remove from my collection" : "add to my collection")
+                                .foregroundColor(amiibo.isInCollection ? .green : .red)
+                            Text(amiibo.isInCollection ? "remove from my collection" : "add to my collection")
                                 .font(.system(size: 13, weight: .regular))
-                                .foregroundColor(.red)
+                                .foregroundColor(amiibo.isInCollection ? .green : .red)
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 38)
-                        .background(Color.red.opacity(0.1))
+                        .background(amiibo.isInCollection ? Color.green.opacity(0.1) : Color.red.opacity(0.1))
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                         .overlay(
                             RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.red.opacity(0.3), lineWidth: 1)
+                                .stroke(amiibo.isInCollection ? Color.green.opacity(0.3) : Color.red.opacity(0.3), lineWidth: 1)
                         )
                     }
                     .padding(.horizontal, 85)
                 }
                 
                 // Release Info
-                if let release = currentAmiibo.release {
+                if let release = amiibo.release {
                     ReleaseInfoView(release: release)
                         .padding(.horizontal, 20)
                         .padding(.top, 20)
+                        .padding(.bottom, 30)
+                }
                 }
             }
             .padding(.bottom, 20)
         }
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationTitle("")
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: {
-                    openAmazonLink(for: currentAmiibo)
-                    analyticsService.logEvent(AnalyticsService.AMIIBO_AMAZON, id: currentAmiibo.head + currentAmiibo.tail, name: currentAmiibo.name)
-                }) {
-                    Image(systemName: "cart")
-                        .foregroundColor(.appRed)
-                        .font(.system(size: 16, weight: .medium))
+            // Only show toolbar if not in TabView (shouldHandleAds true means single item view)
+            if shouldHandleAds {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        openAmazonLink(for: amiibo)
+                        analyticsService.logEvent(AnalyticsService.AMIIBO_AMAZON, id: amiibo.head + amiibo.tail, name: amiibo.name)
+                    }) {
+                        Image(systemName: "cart")
+                            .foregroundColor(.appRed)
+                            .font(.system(size: 16, weight: .medium))
+                    }
                 }
-            }
-            
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: {
-                    viewModel.toggleWishlist(currentAmiibo)
-                    let action = currentAmiibo.isInWishlist ? "remove_from_wishlist" : "add_to_wishlist"
-                    analyticsService.logEvent(AnalyticsService.AMIIBO_ADD_WISHLIST, id: currentAmiibo.head + currentAmiibo.tail, name: action)
-                }) {
-                    Image(systemName: currentAmiibo.isInWishlist ? "bookmark.fill" : "bookmark")
-                        .foregroundColor(.appRed)
-                        .font(.system(size: 16, weight: .medium))
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        // Haptic feedback for wishlist action
+                        HapticManager.shared.lightImpact()
+                        let isAdding = !amiibo.isInWishlist
+                        viewModel.toggleWishlist(amiibo)
+                        let action = amiibo.isInWishlist ? "remove_from_wishlist" : "add_to_wishlist"
+                        if isAdding {
+                            // Success haptic when adding to wishlist
+                            HapticManager.shared.success()
+                        }
+                        analyticsService.logEvent(AnalyticsService.AMIIBO_ADD_WISHLIST, id: amiibo.head + amiibo.tail, name: action)
+                    }) {
+                        Image(systemName: amiibo.isInWishlist ? "bookmark.fill" : "bookmark")
+                            .foregroundColor(.appRed)
+                            .font(.system(size: 16, weight: .medium))
+                    }
                 }
             }
         }
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationTitle("")
         .background(themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(red: 1.0, green: 0.984, blue: 0.996))
         .onTapGesture {
             // Dismiss keyboard when tapping anywhere on the details screen
@@ -173,28 +424,28 @@ struct AmiiboDetailsView: View {
             
             // Log screen view
             analyticsService.logScreenView("details_screen", screenClass: "AmiiboDetailsView")
-            analyticsService.logEvent(AnalyticsService.AMIIBO_DETAILS_OPENED, id: currentAmiibo.head + currentAmiibo.tail, name: currentAmiibo.name)
+            analyticsService.logEvent(AnalyticsService.AMIIBO_DETAILS_OPENED, id: amiibo.head + amiibo.tail, name: amiibo.name)
         }
         .onDisappear {
             isDetailsPresented = false
         }
-        .sheet(isPresented: $showingSeriesView) {
-            AmiiboSeriesView(gameSeries: currentAmiibo.gameSeries, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)
-        }
-        .fullScreenCover(isPresented: $showingCompatibilityView) {
-            AmiiboCompatibilityView(amiibo: currentAmiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)
-        }
         .onAppear {
-            // Show interstitial ad (every 3rd time) - only if ads not purchased
-            if !purchaseManager.isNoAdsPurchased {
+            // Show interstitial ad (every 8th time) - only if ads not purchased and should handle ads
+            if shouldHandleAds && !purchaseManager.isNoAdsPurchased {
                 adMobService.showInterstitialAd {
                     // Ad dismissed or not shown
                 }
             }
         }
+        .overlay {
+            // Success animation overlay - no message text to avoid overlap
+            if showingSuccessAnimation {
+                SuccessAnimationView(isShowing: $showingSuccessAnimation, message: "")
+            }
+        }
     }
     
-    private func openAmazonLink(for amiibo: Amiibo) {
+    func openAmazonLink(for amiibo: Amiibo) {
         // Create Amazon search URL like Android implementation
         let amiiboName = amiibo.name.replacingOccurrences(of: "&", with: " ")
         let amiiboNameFiltered = amiiboName.replacingOccurrences(of: " ", with: "+")
@@ -338,3 +589,4 @@ struct ReleaseCard: View {
         return ""
     }
 }
+

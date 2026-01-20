@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 struct AmiiboCompatibilityView: View {
     let amiibo: Amiibo
@@ -8,10 +9,15 @@ struct AmiiboCompatibilityView: View {
     @State private var selectedTab = 0
     @State private var isLoading = true
     @State private var showError = false
+    @State private var errorMessage = ""
+    @State private var showErrorAlert = false
+    @State private var amiiboGames: AmiiboGames?
     @StateObject private var themeManager = ThemeManager.shared
     @StateObject private var adMobService = AdMobService.shared
     @StateObject private var purchaseManager = PurchaseManager.shared
+    @State private var cancellables = Set<AnyCancellable>()
     
+    private let networkService = NetworkService.shared
     private let tabs = ["Switch", "3DS", "Wii U"]
     
     var body: some View {
@@ -88,7 +94,7 @@ struct AmiiboCompatibilityView: View {
                 // Games List
                 ScrollView {
                     LazyVStack(spacing: 12) {
-                        ForEach(sampleGames(for: selectedTab), id: \.self) { game in
+                        ForEach(getGames(for: selectedTab), id: \.id) { game in
                             GameCompatibilityCard(game: game)
                         }
                         
@@ -114,50 +120,113 @@ struct AmiiboCompatibilityView: View {
                 }
             }
         }
+        .alert("Compatibility Data Error", isPresented: $showErrorAlert) {
+            Button("OK", role: .cancel) { }
+            Button("Retry") {
+                loadCompatibilityData()
+            }
+        } message: {
+            Text(errorMessage)
+        }
     }
     
     
     private func loadCompatibilityData() {
-        // Simulate loading
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            isLoading = false
-            // For now, we'll show sample data
-            // In a real implementation, this would fetch from an API
-        }
+        isLoading = true
+        showError = false
+        
+        networkService.fetchAmiiboConsoles(tail: amiibo.tail)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { completion in
+                    isLoading = false
+                    if case .failure(let error) = completion {
+                        var errorDesc = error.localizedDescription
+                        var errorDetails = "Error type: \(type(of: error))"
+                        
+                        // Get more details if it's an NSError
+                        if let nsError = error as NSError? {
+                            errorDetails += "\nDomain: \(nsError.domain)"
+                            errorDetails += "\nCode: \(nsError.code)"
+                            
+                            // Get debug description if available
+                            if let debugDesc = nsError.userInfo["NSDebugDescription"] as? String {
+                                errorDetails += "\n\nDebug: \(debugDesc)"
+                            }
+                            
+                            // Get coding path if available
+                            if let codingPath = nsError.userInfo["NSCodingPath"] as? [String] {
+                                errorDetails += "\n\nPath: \(codingPath.joined(separator: " -> "))"
+                            }
+                            
+                            if let underlyingError = nsError.userInfo[NSUnderlyingErrorKey] as? NSError {
+                                errorDetails += "\n\nUnderlying error: \(underlyingError.localizedDescription)"
+                            }
+                        }
+                        
+                        errorMessage = "Failed to load compatibility data:\n\n\(errorDesc)\n\n\(errorDetails)"
+                        showError = true
+                        showErrorAlert = true
+                    }
+                },
+                receiveValue: { games in
+                    isLoading = false
+                    if let firstAmiibo = games.amiibo.first {
+                        amiiboGames = firstAmiibo
+                        if firstAmiibo.games3DS.isEmpty && firstAmiibo.gamesSwitch.isEmpty && firstAmiibo.gamesWiiU.isEmpty {
+                            showError = true
+                        }
+                    } else {
+                        showError = true
+                    }
+                }
+            )
+            .store(in: &cancellables)
     }
     
-    private func sampleGames(for tab: Int) -> [String] {
+    private func getGames(for tab: Int) -> [GameCompatibilityItem] {
+        guard let amiiboGames = amiiboGames else { return [] }
+        
         switch tab {
         case 0: // Switch
-            return [
-                "Super Smash Bros. Ultimate",
-                "The Legend of Zelda: Breath of the Wild",
-                "Animal Crossing: New Horizons",
-                "Mario Kart 8 Deluxe",
-                "Splatoon 2"
-            ]
+            return amiiboGames.gamesSwitch.map { game in
+                GameCompatibilityItem(
+                    name: game.gameName,
+                    usage: game.amiiboUsage.first?.usage ?? "",
+                    write: game.amiiboUsage.first?.write ?? false
+                )
+            }
         case 1: // 3DS
-            return [
-                "Super Smash Bros. for Nintendo 3DS",
-                "Animal Crossing: New Leaf",
-                "Mario Kart 7",
-                "Fire Emblem Fates"
-            ]
+            return amiiboGames.games3DS.map { game in
+                GameCompatibilityItem(
+                    name: game.gameName,
+                    usage: game.amiiboUsage.first?.usage ?? "",
+                    write: game.amiiboUsage.first?.write ?? false
+                )
+            }
         case 2: // Wii U
-            return [
-                "Super Smash Bros. for Wii U",
-                "Mario Kart 8",
-                "Splatoon",
-                "Animal Crossing: amiibo Festival"
-            ]
+            return amiiboGames.gamesWiiU.map { game in
+                GameCompatibilityItem(
+                    name: game.gameName,
+                    usage: game.amiiboUsage.first?.usage ?? "",
+                    write: game.amiiboUsage.first?.write ?? false
+                )
+            }
         default:
             return []
         }
     }
+    
+    struct GameCompatibilityItem: Identifiable {
+        let id = UUID()
+        let name: String
+        let usage: String
+        let write: Bool
+    }
 }
 
 struct GameCompatibilityCard: View {
-    let game: String
+    let game: AmiiboCompatibilityView.GameCompatibilityItem
     @State private var isExpanded = false
     @StateObject private var themeManager = ThemeManager.shared
     
@@ -165,20 +234,30 @@ struct GameCompatibilityCard: View {
         VStack(alignment: .leading, spacing: 0) {
             // Header - always visible
             HStack {
-                Text(game)
+                Text(game.name)
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(themeManager.isDarkMode ? .white : .primary)
                 
                 Spacer()
                 
                 HStack(spacing: 8) {
-                    Text("Compatible")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.green)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 4)
-                        .background(Color.green.opacity(0.1))
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                    if game.write {
+                        Text("Read/Write")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.orange)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.orange.opacity(0.1))
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                    } else {
+                        Text("Read Only")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.green)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.green.opacity(0.1))
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                    }
                     
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                         .font(.system(size: 14, weight: .medium))
@@ -204,7 +283,7 @@ struct GameCompatibilityCard: View {
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(themeManager.isDarkMode ? .white : .primary)
                         
-                        Text(getUsageDescription(for: game))
+                        Text(game.usage.isEmpty ? "No usage information available." : game.usage)
                             .font(.system(size: 14))
                             .foregroundColor(themeManager.isDarkMode ? .white.opacity(0.8) : .secondary)
                             .lineLimit(nil)
@@ -216,41 +295,6 @@ struct GameCompatibilityCard: View {
         }
         .background(themeManager.isDarkMode ? Color.black : Color(.systemGray6))
         .clipShape(RoundedRectangle(cornerRadius: 12))
-    }
-    
-    private func getUsageDescription(for game: String) -> String {
-        // This would normally come from the API
-        // For now, returning sample descriptions based on game
-        switch game {
-        case "Super Smash Bros. Ultimate":
-            return "Use this amiibo to train a CPU fighter that learns from your playstyle. The fighter will level up and become stronger as you battle together."
-        case "The Legend of Zelda: Breath of the Wild":
-            return "Scan this amiibo to receive special items, weapons, and materials. Some amiibos unlock exclusive armor sets and unique weapons."
-        case "Animal Crossing: New Horizons":
-            return "Invite this character to your island as a special visitor. They may bring unique furniture, clothing, or other exclusive items."
-        case "Mario Kart 8 Deluxe":
-            return "Unlock a Mii racing suit based on this character. Each amiibo provides a unique costume with special abilities and appearance."
-        case "Splatoon 2":
-            return "Receive exclusive gear and weapons. Some amiibos unlock special outfits that can't be obtained through normal gameplay."
-        case "Super Smash Bros. for Nintendo 3DS":
-            return "Train a CPU fighter that adapts to your fighting style. The fighter will gain experience and improve over time."
-        case "Animal Crossing: New Leaf":
-            return "Invite this character to your town. They may bring special furniture, clothing, or other exclusive items for your home."
-        case "Mario Kart 7":
-            return "Unlock a Mii racing suit and special kart parts. Each amiibo provides unique customization options for your racer."
-        case "Fire Emblem Fates":
-            return "Receive special items and support conversations. Some amiibos unlock exclusive characters or story content."
-        case "Super Smash Bros. for Wii U":
-            return "Train a CPU fighter that learns from your battles. The fighter will develop unique fighting patterns and strategies."
-        case "Mario Kart 8":
-            return "Unlock Mii racing suits and special kart customization options. Each amiibo provides unique visual and performance upgrades."
-        case "Splatoon":
-            return "Receive exclusive gear, weapons, and special missions. Some amiibos unlock unique clothing and equipment sets."
-        case "Animal Crossing: amiibo Festival":
-            return "Add this character to your amiibo Festival board game. Each character has unique abilities and special events."
-        default:
-            return "This amiibo can be used with this game to unlock special content, characters, or features. Tap the amiibo to the NFC reader to activate its functionality."
-        }
     }
 }
 

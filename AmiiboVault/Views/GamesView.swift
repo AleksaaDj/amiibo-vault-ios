@@ -1,5 +1,6 @@
 import SwiftUI
 import FirebaseAnalytics
+import Kingfisher
 
 struct GamesView: View {
     @Binding var isGameDetailsPresented: Bool
@@ -154,22 +155,39 @@ struct GameListItemView: View {
     var body: some View {
         HStack(spacing: 0) {
             // Game Image - no padding on top, left, bottom
-            AsyncImage(url: URL(string: game.backgroundImage ?? "")) { image in
-                image
+            // Use Kingfisher like the rest of the app (matches Android's Coil approach)
+            if let imageUrlString = game.backgroundImage, !imageUrlString.isEmpty, let imageUrl = URL(string: imageUrlString) {
+                KFImage(imageUrl)
+                    .placeholder {
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.3))
+                            .overlay(
+                                Image(systemName: "gamecontroller")
+                                    .foregroundColor(.gray)
+                            )
+                    }
+                    .onFailure { _ in
+                        // Handle failure silently, placeholder will show
+                    }
+                    .fade(duration: 0.15)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-            } placeholder: {
+                    .frame(width: 80, height: 80)
+                    .clipShape(
+                        LeftRoundedRectangle(cornerRadius: 8)
+                    )
+            } else {
                 Rectangle()
                     .fill(Color.gray.opacity(0.3))
                     .overlay(
                         Image(systemName: "gamecontroller")
                             .foregroundColor(.gray)
                     )
+                    .frame(width: 80, height: 80)
+                    .clipShape(
+                        LeftRoundedRectangle(cornerRadius: 8)
+                    )
             }
-            .frame(width: 80, height: 80)
-            .clipShape(
-                LeftRoundedRectangle(cornerRadius: 8)
-            )
             
             // Game Info
             VStack(alignment: .leading, spacing: 0) {

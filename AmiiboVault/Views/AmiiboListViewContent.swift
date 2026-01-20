@@ -33,7 +33,7 @@ struct AmiiboListContent: View {
                 if let selectedAmiibo = selectedAmiiboForDetails {
                     // Suppress deprecation warning for NavigationLink
                     NavigationLink(
-                        destination: AmiiboDetailsView(amiibo: selectedAmiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented),
+                        destination: AmiiboDetailsView(amiibo: selectedAmiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented, amiiboList: amiiboList),
                         isActive: $showingDetails
                     ) {
                         EmptyView()
@@ -82,7 +82,7 @@ struct AmiiboGridView: View {
                 if let selectedAmiibo = selectedAmiiboForDetails {
                     // Suppress deprecation warning for NavigationLink
                     NavigationLink(
-                        destination: AmiiboDetailsView(amiibo: selectedAmiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented),
+                        destination: AmiiboDetailsView(amiibo: selectedAmiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented, amiiboList: amiiboList),
                         isActive: $showingDetails
                     ) {
                         EmptyView()

@@ -10,7 +10,7 @@ class RawgApiService {
     
     private func loadApiKey() {
         // RAWG API key for Nintendo games
-        apiKey = "6622cbb07588423cb9ee0fd41c939ea8"
+        apiKey = "2b4ebb14880243669ac6602d53c13a5c"
         
         // TODO: In production, this should be fetched from Firebase like the Android app
         // This should match the Android implementation where it fetches from Firebase

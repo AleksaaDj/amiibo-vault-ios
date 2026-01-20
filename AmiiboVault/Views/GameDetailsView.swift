@@ -1,4 +1,5 @@
 import SwiftUI
+import Kingfisher
 
 struct GameDetailsView: View {
     let game: Game
@@ -13,11 +14,29 @@ struct GameDetailsView: View {
         ScrollView {
             VStack(spacing: 0) {
                 // Game Image
-                AsyncImage(url: URL(string: game.backgroundImage ?? "")) { image in
-                    image
+                // Use Kingfisher like the rest of the app (matches Android's Coil approach)
+                if let imageUrlString = game.backgroundImage, !imageUrlString.isEmpty, let imageUrl = URL(string: imageUrlString) {
+                    KFImage(imageUrl)
+                        .placeholder {
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.3))
+                                .overlay(
+                                    Image(systemName: "gamecontroller")
+                                        .font(.system(size: 60))
+                                        .foregroundColor(.gray)
+                                )
+                        }
+                        .onFailure { _ in
+                            // Handle failure silently, placeholder will show
+                        }
+                        .fade(duration: 0.15)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                } placeholder: {
+                        .frame(maxHeight: 300)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.gray.opacity(0.1))
+                        .padding(.top, 20)
+                } else {
                     Rectangle()
                         .fill(Color.gray.opacity(0.3))
                         .overlay(
@@ -25,11 +44,11 @@ struct GameDetailsView: View {
                                 .font(.system(size: 60))
                                 .foregroundColor(.gray)
                         )
+                        .frame(maxHeight: 300)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.gray.opacity(0.1))
+                        .padding(.top, 20)
                 }
-                .frame(maxHeight: 300)
-                .frame(maxWidth: .infinity)
-                .background(Color.gray.opacity(0.1))
-                .padding(.top, 20)
                 
                 VStack(spacing: 20) {
                     // Game Title - Centered
@@ -127,20 +146,33 @@ struct GameDetailsView: View {
                                         Button(action: {
                                             selectedScreenshot = screenshot
                                         }) {
-                                            AsyncImage(url: URL(string: screenshot.image ?? "")) { image in
-                                                image
+                                            if let imageUrlString = screenshot.image, !imageUrlString.isEmpty, let imageUrl = URL(string: imageUrlString) {
+                                                KFImage(imageUrl)
+                                                    .placeholder {
+                                                        Rectangle()
+                                                            .fill(Color.gray.opacity(0.3))
+                                                            .overlay(
+                                                                ProgressView()
+                                                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                                            )
+                                                    }
+                                                    .onFailure { _ in
+                                                        // Handle failure silently
+                                                    }
                                                     .resizable()
                                                     .aspectRatio(contentMode: .fill)
-                                            } placeholder: {
+                                                    .frame(width: 160, height: 120)
+                                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                                            } else {
                                                 Rectangle()
                                                     .fill(Color.gray.opacity(0.3))
                                                     .overlay(
                                                         ProgressView()
                                                             .progressViewStyle(CircularProgressViewStyle(tint: .white))
                                                     )
+                                                    .frame(width: 160, height: 120)
+                                                    .clipShape(RoundedRectangle(cornerRadius: 12))
                                             }
-                                            .frame(width: 160, height: 120)
-                                            .clipShape(RoundedRectangle(cornerRadius: 12))
                                         }
                                         .buttonStyle(PlainButtonStyle())
                                     }
@@ -257,42 +289,50 @@ struct FullScreenScreenshotView: View {
         ZStack {
             Color.black.ignoresSafeArea()
             
-            AsyncImage(url: URL(string: screenshot.image ?? "")) { image in
-                image
+            if let imageUrlString = screenshot.image, !imageUrlString.isEmpty, let imageUrl = URL(string: imageUrlString) {
+                KFImage(imageUrl)
+                    .placeholder {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            .scaleEffect(1.5)
+                    }
+                    .onFailure { _ in
+                        // Handle failure silently
+                    }
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .scaleEffect(scale)
                     .offset(offset)
-                    .gesture(
-                        MagnificationGesture()
-                            .onChanged { value in
-                                let delta = value / lastScale
-                                lastScale = value
-                                scale = min(max(scale * delta, 1.0), 4.0)
-                            }
-                            .onEnded { _ in
-                                lastScale = 1.0
-                                if scale < 1.0 {
-                                    withAnimation(.easeInOut(duration: 0.3)) {
-                                        scale = 1.0
-                                        offset = .zero
-                                    }
+                .gesture(
+                    MagnificationGesture()
+                        .onChanged { value in
+                            let delta = value / lastScale
+                            lastScale = value
+                            scale = min(max(scale * delta, 1.0), 4.0)
+                        }
+                        .onEnded { _ in
+                            lastScale = 1.0
+                            if scale < 1.0 {
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    scale = 1.0
+                                    offset = .zero
                                 }
                             }
-                    )
-                    .simultaneousGesture(
-                        DragGesture()
-                            .onChanged { value in
-                                offset = CGSize(
-                                    width: lastOffset.width + value.translation.width,
-                                    height: lastOffset.height + value.translation.height
-                                )
-                            }
-                            .onEnded { _ in
-                                lastOffset = offset
-                            }
-                    )
-            } placeholder: {
+                        }
+                )
+                .simultaneousGesture(
+                    DragGesture()
+                        .onChanged { value in
+                            offset = CGSize(
+                                width: lastOffset.width + value.translation.width,
+                                height: lastOffset.height + value.translation.height
+                            )
+                        }
+                        .onEnded { _ in
+                            lastOffset = offset
+                        }
+                )
+            } else {
                 ProgressView()
                     .progressViewStyle(CircularProgressViewStyle(tint: .white))
                     .scaleEffect(1.5)
@@ -343,16 +383,25 @@ struct ScreenshotsView: View {
                     GridItem(.flexible())
                 ], spacing: 16) {
                     ForEach(screenshots) { screenshot in
-                        AsyncImage(url: URL(string: screenshot.image ?? "")) { image in
-                            image
+                        if let imageUrlString = screenshot.image, !imageUrlString.isEmpty, let imageUrl = URL(string: imageUrlString) {
+                            KFImage(imageUrl)
+                                .placeholder {
+                                    Rectangle()
+                                        .fill(Color.gray.opacity(0.3))
+                                }
+                                .onFailure { _ in
+                                    // Handle failure silently
+                                }
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
-                        } placeholder: {
+                                .frame(height: 200)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                        } else {
                             Rectangle()
                                 .fill(Color.gray.opacity(0.3))
+                                .frame(height: 200)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
-                        .frame(height: 200)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
                 }
                 .padding()

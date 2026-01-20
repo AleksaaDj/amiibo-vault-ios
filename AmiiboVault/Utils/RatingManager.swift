@@ -2,17 +2,29 @@ import Foundation
 import StoreKit
 import SwiftUI
 import Combine
+import UIKit
 
-class RatingManager: ObservableObject {
+class RatingManager: NSObject, ObservableObject, SKStoreProductViewControllerDelegate {
     static let shared = RatingManager()
     
     private let userDefaults = UserDefaults.standard
     private let appOpenedRateTimesKey = "app_opened_rate_times"
+    private let appOpenedAdsTimesKey = "app_opened_ads_times"
+    private let adsDialogDismissedKey = "ads_dialog_dismissed"
     
     // Show rating dialog after 3 app launches (matching Android)
     private let targetAppOpenedTimes = 3
+    // Show "Tired of ads" dialog after 4 app launches
+    private let targetAdsDialogTimes = 4
     
-    private init() {}
+    private override init() {
+        super.init()
+    }
+    
+    // MARK: - SKStoreProductViewControllerDelegate
+    func productViewControllerDidFinish(_ viewController: SKStoreProductViewController) {
+        viewController.dismiss(animated: true)
+    }
     
     // MARK: - App Launch Tracking
     func incrementAppOpenedTimes() {
@@ -60,10 +72,56 @@ class RatingManager: ObservableObject {
         print("📱 In production, this would show the native iOS rating dialog")
     }
     
+    // MARK: - Ads Dialog Tracking
+    func incrementAppOpenedAdsTimes() {
+        let currentTimes = getAppOpenedAdsTimes()
+        setAppOpenedAdsTimes(currentTimes + 1)
+    }
+    
+    func getAppOpenedAdsTimes() -> Int {
+        return userDefaults.integer(forKey: appOpenedAdsTimesKey)
+    }
+    
+    private func setAppOpenedAdsTimes(_ times: Int) {
+        userDefaults.set(times, forKey: appOpenedAdsTimesKey)
+    }
+    
+    func shouldShowAdsDialog() -> Bool {
+        // Only show if not dismissed and reached target times
+        if isAdsDialogDismissed() {
+            return false
+        }
+        return getAppOpenedAdsTimes() >= targetAdsDialogTimes
+    }
+    
+    func markAdsDialogDismissed() {
+        userDefaults.set(true, forKey: adsDialogDismissedKey)
+    }
+    
+    func markAdsDialogPermanentlyDismissed() {
+        // Mark as permanently dismissed (when premium is purchased)
+        userDefaults.set(true, forKey: adsDialogDismissedKey)
+    }
+    
+    func resetAdsDialogCounter() {
+        // Reset counter when "Maybe Later" is clicked, so it can show again after 5 more opens
+        setAppOpenedAdsTimes(0)
+    }
+    
+    func isAdsDialogDismissed() -> Bool {
+        return userDefaults.bool(forKey: adsDialogDismissedKey)
+    }
+    
     // MARK: - Debug Methods
     func resetRatingForTesting() {
         userDefaults.removeObject(forKey: appOpenedRateTimesKey)
         print("🔄 Rating state reset for testing")
+    }
+    
+    func resetAdsDialogForTesting() {
+        userDefaults.removeObject(forKey: appOpenedAdsTimesKey)
+        userDefaults.removeObject(forKey: adsDialogDismissedKey)
+        print("🔄 Ads dialog state reset for testing")
     }
     
     func getDebugInfo() -> String {
@@ -77,9 +135,52 @@ class RatingManager: ObservableObject {
     
     // MARK: - Manual Rating (for Support screen)
     func openAppStoreRating() {
-        // Open App Store directly for rating
-        if let url = URL(string: "https://apps.apple.com/app/id6753917936?action=write-review") {
-            UIApplication.shared.open(url)
+        // Use SKStoreProductViewController for reliable in-app App Store display
+        // This works on both simulator and device
+        DispatchQueue.main.async {
+            let productViewController = SKStoreProductViewController()
+            productViewController.delegate = self
+            
+            let parameters = [SKStoreProductParameterITunesItemIdentifier: "6753917936"]
+            
+            // Get the key window's root view controller
+            guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                  let window = windowScene.windows.first(where: { $0.isKeyWindow }),
+                  let rootViewController = window.rootViewController else {
+                // If we can't get the view controller, try simple HTTPS URL fallback
+                if let url = URL(string: "https://apps.apple.com/app/id6753917936") {
+                    UIApplication.shared.open(url, options: [:], completionHandler: { success in
+                        if !success {
+                            print("Failed to open App Store URL")
+                        }
+                    })
+                }
+                return
+            }
+            
+            // Find the topmost view controller
+            var topController = rootViewController
+            while let presented = topController.presentedViewController {
+                topController = presented
+            }
+            
+            productViewController.loadProduct(withParameters: parameters) { (success, error) in
+                DispatchQueue.main.async {
+                    if success {
+                        topController.present(productViewController, animated: true)
+                    } else {
+                        // Fallback to simple HTTPS URL if SKStoreProductViewController fails
+                        // This should work on simulator
+                        if let url = URL(string: "https://apps.apple.com/app/id6753917936") {
+                            UIApplication.shared.open(url, options: [:], completionHandler: { success in
+                                if !success {
+                                    print("Failed to open App Store URL: \(error?.localizedDescription ?? "Unknown error")")
+                                }
+                            })
+                        }
+                    }
+                }
+            }
         }
     }
 }
