@@ -42,18 +42,6 @@
 		};
 /* End PBXContainerItemProxy section */
 
-/* Begin PBXCopyFilesBuildPhase section */
-		01F73CB52F1D5D5E00560C9A /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 7;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
-
 /* Begin PBXFileReference section */
 		012D9DBF2E9683D900C77CE1 /* AmiiboVault.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AmiiboVault.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		012D9DD12E9683DA00C77CE1 /* AmiiboVaultTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AmiiboVaultTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -64,6 +52,8 @@
 		012D9E082E968BD600C77CE1 /* Exceptions for "AmiiboVault" folder in "AmiiboVault" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				amiibo.json,
+				games_info.json,
 				Info.plist,
 			);
 			target = 012D9DBE2E9683D900C77CE1 /* AmiiboVault */;
@@ -162,7 +152,6 @@
 				012D9DBB2E9683D900C77CE1 /* Sources */,
 				012D9DBC2E9683D900C77CE1 /* Frameworks */,
 				012D9DBD2E9683D900C77CE1 /* Resources */,
-				01F73CB52F1D5D5E00560C9A /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -481,7 +470,7 @@
 				"CODE_SIGN_ENTITLEMENTS[sdk=*]" = AmiiboVault/AmiiboVault.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 3;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 6NUJ7T376K;
 				ENABLE_PREVIEWS = YES;
@@ -501,7 +490,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.1.1;
+				MARKETING_VERSION = 2.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.softwavegamess.AmiiboVaultApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -523,7 +512,7 @@
 				"CODE_SIGN_ENTITLEMENTS[sdk=*]" = AmiiboVault/AmiiboVault.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 6NUJ7T376K;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -542,7 +531,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.1.1;
+				MARKETING_VERSION = 2.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.softwavegamess.AmiiboVaultApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

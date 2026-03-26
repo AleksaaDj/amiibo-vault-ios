@@ -108875,6 +108875,98 @@
 				}
 			]
 		},
+		"0x1f01000004c61e03": {
+			"games3DS": [],
+			"gamesWiiU": [],
+			"gamesSwitch": [
+				{
+					"gameName": "Kirby and the Forgotten Land",
+					"gameID": [
+						"01004D300C5AE000"
+					],
+					"amiiboUsage": [
+						{
+							"Usage": "Receive star coins and a boost item",
+							"write": false
+						}
+					]
+				},
+				{
+					"gameName": "Kirby Star Allies",
+					"gameID": [
+						"01007E3006DDA000"
+					],
+					"amiiboUsage": [
+						{
+							"Usage": "Receive two Picture Pieces, a Maxim Tomato, and two Point Stars",
+							"write": false
+						}
+					]
+				},
+				{
+					"gameName": "Kirby's Return to Dream Land Deluxe",
+					"gameID": [
+						"01006B601380E000"
+					],
+					"amiiboUsage": [
+						{
+							"Usage": "Receive more useful items",
+							"write": false
+						}
+					]
+				},
+				{
+					"gameName": "Mario Kart 8 Deluxe",
+					"gameID": [
+						"0100152000022000"
+					],
+					"amiiboUsage": [
+						{
+							"Usage": "Unlock a Kirby-themed racing suit",
+							"write": false
+						}
+					]
+				},
+				{
+					"gameName": "Super Kirby Clash",
+					"gameID": [
+						"01003FB00C5A8000"
+					],
+					"amiiboUsage": [
+						{
+							"Usage": "Receive 10-20 Fragments",
+							"write": false
+						}
+					]
+				},
+				{
+					"gameName": "Super Smash Bros. Ultimate",
+					"gameID": [
+						"01006A800016E000"
+					],
+					"amiiboUsage": [
+						{
+							"Usage": "Battle and train up a computer-controlled Figure Player of the character",
+							"write": true
+						}
+					]
+				}
+			],
+			"gamesSwitch2": [
+				{
+					"gameName": "Kirby Air Riders",
+					"gameID": [
+						"7001000010377500"
+					],
+					"amiiboUsage": [
+						{
+							"Usage": "Race and train up a computer-controlled Figure Player of the character / Change main menu cursor doll to match amiibo",
+							"write": true
+						}
+					]
+				}
+			]
+		},
 		"0x1f02000000280002": {
 			"games3DS": [
 				{
@@ -116919,6 +117011,24 @@
 					]
 				}
 			],
+			"gamesSwitch2": []
+		},
+		"0x0000040004c10102": {
+			"games3DS": [],
+			"gamesWiiU": [],
+			"gamesSwitch": [],
+			"gamesSwitch2": []
+		},
+		"0x000a010004c20102": {
+			"games3DS": [],
+			"gamesWiiU": [],
+			"gamesSwitch": [],
+			"gamesSwitch2": []
+		},
+		"0x0025010004c30102": {
+			"games3DS": [],
+			"gamesWiiU": [],
+			"gamesSwitch": [],
 			"gamesSwitch2": []
 		}
 	}

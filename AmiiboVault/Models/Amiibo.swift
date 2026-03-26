@@ -238,6 +238,7 @@ struct AmiiboGames: Identifiable, Hashable {
     let gameSeries: String
     let games3DS: [Games3DS]
     let gamesSwitch: [GamesSwitch]
+    let gamesSwitch2: [GamesSwitch]
     let gamesWiiU: [GamesWiiU]
     let head: String
     let image: String

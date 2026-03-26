@@ -366,6 +366,18 @@ class LocalJsonService {
                 return GamesWiiU(amiiboUsage: amiiboUsage, gameID: gameID, gameName: gameName)
             } ?? []
             
+            let gamesSwitch2 = (foundGamesDataRaw["gamesSwitch2"] as? [[String: Any]])?.map { gameDict -> GamesSwitch in
+                let gameID = gameDict["gameID"] as? [String] ?? []
+                let gameName = gameDict["gameName"] as? String ?? ""
+                let amiiboUsage = (gameDict["amiiboUsage"] as? [[String: Any]])?.map { usageDict -> AmiiboUsage in
+                    let usage = usageDict["Usage"] as? String ?? ""
+                    let writeValue = usageDict["write"]
+                    let write = parseWriteValue(writeValue)
+                    return AmiiboUsage(usage: usage, write: write)
+                } ?? []
+                return GamesSwitch(amiiboUsage: amiiboUsage, gameID: gameID, gameName: gameName)
+            } ?? []
+            
             // Android line 145-158: Create AmiiboGames
             let amiiboGames = AmiiboGames(
                 amiiboSeries: foundAmiibo.amiiboSeries,
@@ -373,6 +385,7 @@ class LocalJsonService {
                 gameSeries: foundAmiibo.gameSeries,
                 games3DS: games3DS,
                 gamesSwitch: gamesSwitch,
+                gamesSwitch2: gamesSwitch2,
                 gamesWiiU: gamesWiiU,
                 head: foundAmiibo.head,
                 image: foundAmiibo.image,

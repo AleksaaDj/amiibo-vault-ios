@@ -18,7 +18,7 @@ struct AmiiboCompatibilityView: View {
     @State private var cancellables = Set<AnyCancellable>()
     
     private let networkService = NetworkService.shared
-    private let tabs = ["Switch", "3DS", "Wii U"]
+    private let tabs = ["Switch", "Switch 2", "3DS", "Wii U"]
     
     var body: some View {
         VStack(spacing: 0) {
@@ -173,7 +173,7 @@ struct AmiiboCompatibilityView: View {
                     isLoading = false
                     if let firstAmiibo = games.amiibo.first {
                         amiiboGames = firstAmiibo
-                        if firstAmiibo.games3DS.isEmpty && firstAmiibo.gamesSwitch.isEmpty && firstAmiibo.gamesWiiU.isEmpty {
+                        if firstAmiibo.games3DS.isEmpty && firstAmiibo.gamesSwitch.isEmpty && firstAmiibo.gamesSwitch2.isEmpty && firstAmiibo.gamesWiiU.isEmpty {
                             showError = true
                         }
                     } else {
@@ -196,7 +196,15 @@ struct AmiiboCompatibilityView: View {
                     write: game.amiiboUsage.first?.write ?? false
                 )
             }
-        case 1: // 3DS
+        case 1: // Switch 2
+            return amiiboGames.gamesSwitch2.map { game in
+                GameCompatibilityItem(
+                    name: game.gameName,
+                    usage: game.amiiboUsage.first?.usage ?? "",
+                    write: game.amiiboUsage.first?.write ?? false
+                )
+            }
+        case 2: // 3DS
             return amiiboGames.games3DS.map { game in
                 GameCompatibilityItem(
                     name: game.gameName,
@@ -204,7 +212,7 @@ struct AmiiboCompatibilityView: View {
                     write: game.amiiboUsage.first?.write ?? false
                 )
             }
-        case 2: // Wii U
+        case 3: // Wii U
             return amiiboGames.gamesWiiU.map { game in
                 GameCompatibilityItem(
                     name: game.gameName,

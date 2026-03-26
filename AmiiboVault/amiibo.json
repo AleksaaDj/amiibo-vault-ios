@@ -14911,6 +14911,70 @@
       },
       "tail": "04c91e03",
       "type": "Figure"
+    },
+    {
+      "amiiboSeries": "Kirby Air Riders",
+      "character": "Meta Knight",
+      "gameSeries": "Kirby",
+      "head": "1f010000",
+      "image": "https://raw.githubusercontent.com/8bitDream/AmiiboAPI/master/images/icon_1f010000-04c61e03.png",
+      "name": "Meta Knight & Shadow Star",
+      "release": {
+        "au": "2026-03-05",
+        "eu": "2026-03-05",
+        "jp": "2026-03-05",
+        "na": "2026-03-05"
+      },
+      "tail": "04c61e03",
+      "type": "Figure"
+    },
+    {
+      "amiiboSeries": "Super Mario Bros.",
+      "character": "Mario",
+      "gameSeries": "Super Mario",
+      "head": "00000400",
+      "image": "https://raw.githubusercontent.com/8bitDream/AmiiboAPI/master/images/icon_00000400-04c10102.png",
+      "name": "Elephant Mario",
+      "release": {
+        "au": "2026-03-26",
+        "eu": "2026-03-26",
+        "jp": "2026-03-26",
+        "na": "2026-03-26"
+      },
+      "tail": "04c10102",
+      "type": "Figure"
+    },
+    {
+      "amiiboSeries": "Super Mario Bros.",
+      "character": "Toad",
+      "gameSeries": "Super Mario",
+      "head": "000a0100",
+      "image": "https://raw.githubusercontent.com/8bitDream/AmiiboAPI/master/images/icon_000a0100-04c20102.png",
+      "name": "Captain Toad & Talking Flower",
+      "release": {
+        "au": "2026-03-26",
+        "eu": "2026-03-26",
+        "jp": "2026-03-26",
+        "na": "2026-03-26"
+      },
+      "tail": "04c20102",
+      "type": "Figure"
+    },
+    {
+      "amiiboSeries": "Super Mario Bros.",
+      "character": "Poplin",
+      "gameSeries": "Super Mario",
+      "head": "00250100",
+      "image": "https://raw.githubusercontent.com/8bitDream/AmiiboAPI/master/images/icon_00250100-04c30102.png",
+      "name": "Poplin & Prince Florian",
+      "release": {
+        "au": "2026-03-26",
+        "eu": "2026-03-26",
+        "jp": "2026-03-26",
+        "na": "2026-03-26"
+      },
+      "tail": "04c30102",
+      "type": "Figure"
     }
   ]
 }
