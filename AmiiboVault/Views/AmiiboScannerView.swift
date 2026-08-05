@@ -25,172 +25,8 @@ struct AmiiboScannerView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Custom Navigation Bar
-            HStack {
-                Spacer()
-                
-                Text("amiibo scanner")
-                    .foregroundColor(.appRed)
-                    .font(.headline)
-                
-                Spacer()
-            }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 8)
-            .background(themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(.systemBackground))
-            
-            // Main Content
-            VStack(spacing: 8) {
-                Spacer()
-                    .frame(height: 100) // More space at the top
-                
-                // Check if scanner is purchased - show animation if purchased, image if not
-                if purchaseManager.isAmiiboScanPurchased {
-                    // Radar animation with fixed center - smaller radius, closer to icon
-                    ZStack {
-                        // Circles expanding and shrinking - smaller radius, closer to icon
-                        ForEach(0..<7, id: \.self) { index in
-                            Circle()
-                                .stroke(
-                                    index == 6 ? Color.gray.opacity(0.3) : // Lighter outer circle
-                                    index == 0 ? Color.gray.opacity(0.8) : // Darker inner circle
-                                    Color.gray.opacity(0.6), // Regular circles
-                                    lineWidth: 3
-                                )
-                                .frame(width: 120 + CGFloat(index * 25), height: 120 + CGFloat(index * 25))
-                                .scaleEffect(animationScale)
-                                .opacity(1 - Double(index) * 0.12)
-                        }
-                        
-                        // NFC icon - absolutely centered with black circle background
-                        Image("nfc_icon")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 40, height: 40)
-                            .foregroundColor(.gray)
-                            .background(
-                                Circle()
-                                    .fill(Color.black)
-                                    .frame(width: 75, height: 75)
-                            )
-                    }
-                    .frame(width: 250, height: 250)
-                    .padding(.bottom, 10) // Add bottom spacing to animation
-                    .onAppear {
-                        withAnimation(
-                            Animation.easeInOut(duration: 2.0)
-                                .repeatForever(autoreverses: true)
-                        ) {
-                            animationScale = 1.2
-                        }
-                        
-                        // Set up repository when view appears
-                        nfcReader.setRepository(amiiboRepository)
-                    }
-                    .onDisappear {
-                        // Stop NFC scanning when view disappears
-                        nfcReader.stopScanning()
-                    }
-                } else {
-                    // Show link_scanner image when not purchased
-                    Image("link_scanner")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 250, height: 250)
-                        .padding(.bottom, 10) // Add bottom spacing to image
-                        .onAppear {
-                            // Set up repository when view appears
-                            nfcReader.setRepository(amiiboRepository)
-                        }
-                }
-                
-                // Check if scanner is purchased
-                if purchaseManager.isAmiiboScanPurchased {
-                // Instruction Text
-                Text("Tap the scan button below\nto start scanning for Amiibo")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(themeManager.isDarkMode ? .white : .black)
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(4)
-                    .padding(.horizontal, 40)
-                    .padding(.top, 8) // Reduced spacing
-                
-                
-                // Scan Button
-                Button(action: {
-                    if nfcReader.isScanning {
-                        nfcReader.stopScanning()
-                    } else {
-                        nfcReader.startScanning()
-                    }
-                }) {
-                    HStack {
-                        Image(systemName: nfcReader.isScanning ? "stop.circle.fill" : "antenna.radiowaves.left.and.right")
-                            .font(.system(size: 18, weight: .medium))
-                        Text(nfcReader.isScanning ? "Stop Scanning" : "Start Scanning")
-                            .font(.system(size: 18, weight: .semibold))
-                    }
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 30)
-                    .padding(.vertical, 15)
-                    .background(
-                        RoundedRectangle(cornerRadius: 25)
-                            .fill(nfcReader.isScanning ? Color.gray : Color.appRed)
-                    )
-                }
-                .padding(.top, 8) // Reduced spacing
-                } else {
-                    // Show purchase button if not purchased
-                    Text("Enable NFC Scanning")
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundColor(themeManager.isDarkMode ? .white : .black)
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(4)
-                        .padding(.horizontal, 40)
-                        .padding(.top, 8) // Reduced spacing
-                    
-                    Text("Scan your Amiibo figures and get all the details instantaneously. Simply tap your Amiibo to the back of your phone to unlock character information, game compatibility, and more.")
-                        .font(.system(size: 14, weight: .regular))
-                        .foregroundColor(themeManager.isDarkMode ? .white.opacity(0.7) : .gray)
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(4)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .padding(.horizontal, 40)
-                        .padding(.top, 5) // Reduced spacing
-                    
-                    Button(action: {
-                        Task {
-                            await purchaseManager.makeAmiiboScanPurchase()
-                            analyticsService.logEvent(AnalyticsService.AMIIBO_ENABLE_SCANNER, name: "enable_scanner_button_clicked")
-                        }
-                    }) {
-                        HStack {
-                            Image(systemName: "lock.fill")
-                                .font(.system(size: 18, weight: .medium))
-                            Text("Enable Scanning")
-                                .font(.system(size: 18, weight: .semibold))
-                        }
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 30)
-                        .padding(.vertical, 15)
-                        .background(
-                            RoundedRectangle(cornerRadius: 25)
-                                .fill(Color.appRed)
-                        )
-                    }
-                    .padding(.top, 8) // Reduced spacing
-                }
-                
-                Spacer() // Push content up
-                
-                // Banner Ad at bottom - only if ads not purchased
-                if !purchaseManager.isNoAdsPurchased {
-                LargeBannerAdView(adUnitID: adMobService.getBannerAdUnitID())
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 20) // Reduced padding for system tab bar
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            scannerNavigationBar
+            scannerMainContent
         }
         .background(themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(red: 1.0, green: 0.984, blue: 0.996))
         .alert("NFC Error", isPresented: .constant(nfcReader.errorMessage != nil)) {
@@ -230,6 +66,204 @@ struct AmiiboScannerView: View {
                 }
             }
         )
+    }
+
+    private var scannerNavigationBar: some View {
+        HStack {
+            Spacer()
+            Text("amiibo scanner")
+                .foregroundColor(.appRed)
+                .font(.headline)
+            Spacer()
+        }
+        .padding(.horizontal, 20)
+        .padding(.bottom, 8)
+        .background(themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(.systemBackground))
+    }
+
+    private var scannerMainContent: some View {
+        VStack(spacing: 8) {
+            Spacer()
+                .frame(height: 100)
+
+            if purchaseManager.isAmiiboScanPurchased {
+                ScannerRadarAnimationView(animationScale: animationScale)
+                    .padding(.bottom, 10)
+                    .onAppear {
+                        withAnimation(
+                            Animation.easeInOut(duration: 2.0)
+                                .repeatForever(autoreverses: true)
+                        ) {
+                            animationScale = 1.2
+                        }
+                        nfcReader.setRepository(amiiboRepository)
+                    }
+                    .onDisappear {
+                        nfcReader.stopScanning()
+                    }
+            } else {
+                Image("link_scanner")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 250, height: 250)
+                    .padding(.bottom, 10)
+                    .onAppear {
+                        nfcReader.setRepository(amiiboRepository)
+                    }
+            }
+
+            if purchaseManager.isAmiiboScanPurchased {
+                scannerPurchasedControls
+            } else {
+                scannerPurchasePrompt
+            }
+
+            Spacer()
+
+            if !purchaseManager.isNoAdsPurchased {
+                LargeBannerAdView(adUnitID: adMobService.getBannerAdUnitID())
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 20)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private var scannerPurchasedControls: some View {
+        Group {
+            Text("Tap the scan button below\nto start scanning for Amiibo")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(themeManager.isDarkMode ? .white : .black)
+                .multilineTextAlignment(.center)
+                .lineSpacing(4)
+                .padding(.horizontal, 40)
+                .padding(.top, 8)
+
+            Button(action: toggleScanning) {
+                HStack {
+                    Image(systemName: nfcReader.isScanning ? "stop.circle.fill" : "antenna.radiowaves.left.and.right")
+                        .font(.system(size: 18, weight: .medium))
+                    Text(nfcReader.isScanning ? "Stop Scanning" : "Start Scanning")
+                        .font(.system(size: 18, weight: .semibold))
+                }
+                .foregroundColor(.white)
+                .padding(.horizontal, 30)
+                .padding(.vertical, 15)
+                .background(
+                    RoundedRectangle(cornerRadius: 25)
+                        .fill(nfcReader.isScanning ? Color.gray : Color.appRed)
+                )
+            }
+            .padding(.top, 8)
+        }
+    }
+
+    private var scannerPurchasePrompt: some View {
+        Group {
+            Text("Enable NFC Scanning")
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundColor(themeManager.isDarkMode ? .white : .black)
+                .multilineTextAlignment(.center)
+                .lineSpacing(4)
+                .padding(.horizontal, 40)
+                .padding(.top, 8)
+
+            Text("Scan your Amiibo figures and get all the details instantaneously. Simply tap your Amiibo to the back of your phone to unlock character information, game compatibility, and more.")
+                .font(.system(size: 14, weight: .regular))
+                .foregroundColor(themeManager.isDarkMode ? .white.opacity(0.7) : .gray)
+                .multilineTextAlignment(.center)
+                .lineSpacing(4)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 40)
+                .padding(.top, 5)
+
+            Button(action: enableScanningPurchase) {
+                HStack {
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 18, weight: .medium))
+                    Text("Enable Scanning")
+                        .font(.system(size: 18, weight: .semibold))
+                }
+                .foregroundColor(.white)
+                .padding(.horizontal, 30)
+                .padding(.vertical, 15)
+                .background(
+                    RoundedRectangle(cornerRadius: 25)
+                        .fill(Color.appRed)
+                )
+            }
+            .padding(.top, 8)
+        }
+    }
+
+    private func toggleScanning() {
+        if nfcReader.isScanning {
+            nfcReader.stopScanning()
+        } else {
+            nfcReader.startScanning()
+        }
+    }
+
+    private func enableScanningPurchase() {
+        Task {
+            await purchaseManager.makeAmiiboScanPurchase()
+            analyticsService.logEvent(AnalyticsService.AMIIBO_ENABLE_SCANNER, name: "enable_scanner_button_clicked")
+        }
+    }
+}
+
+private struct ScannerRadarAnimationView: View {
+    let animationScale: CGFloat
+
+    var body: some View {
+        ZStack {
+            ForEach(0..<7, id: \.self) { index in
+                ScannerRadarRingView(index: index, animationScale: animationScale)
+            }
+
+            Image("nfc_icon")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 40, height: 40)
+                .foregroundColor(.gray)
+                .background(
+                    Circle()
+                        .fill(Color.black)
+                        .frame(width: 75, height: 75)
+                )
+        }
+        .frame(width: 250, height: 250)
+    }
+}
+
+private struct ScannerRadarRingView: View {
+    let index: Int
+    let animationScale: CGFloat
+
+    private var ringSize: CGFloat {
+        120 + CGFloat(index * 25)
+    }
+
+    private var ringColor: Color {
+        if index == 6 {
+            return Color.gray.opacity(0.3)
+        }
+        if index == 0 {
+            return Color.gray.opacity(0.8)
+        }
+        return Color.gray.opacity(0.6)
+    }
+
+    private var ringOpacity: Double {
+        1 - Double(index) * 0.12
+    }
+
+    var body: some View {
+        Circle()
+            .stroke(ringColor, lineWidth: 3)
+            .frame(width: ringSize, height: ringSize)
+            .scaleEffect(animationScale)
+            .opacity(ringOpacity)
     }
 }
 

@@ -398,55 +398,60 @@ class CoreDataService: ObservableObject {
         }
     }
     
+    /// `viewContext` must run on the main queue; catalog completion may arrive on a background queue.
+    /// Copy the array and run all work inside `performAndWait` so Core Data internal collections are never touched off-queue.
     func upsertAmiibos(_ amiibos: [Amiibo]) {
-        for amiibo in amiibos {
-            let request: NSFetchRequest<AmiiboEntity> = AmiiboEntity.fetchRequest()
-            request.predicate = NSPredicate(format: "tail == %@", amiibo.tail)
-            request.fetchLimit = 1
-            
-            do {
-                let existingEntities = try context.fetch(request)
-                if let existingEntity = existingEntities.first {
-                    // Update existing
-                    existingEntity.amiiboSeries = amiibo.amiiboSeries
-                    existingEntity.character = amiibo.character
-                    existingEntity.gameSeries = amiibo.gameSeries
-                    existingEntity.head = amiibo.head
-                    existingEntity.image = amiibo.image
-                    existingEntity.name = amiibo.name
-                    existingEntity.tail = amiibo.tail
-                    existingEntity.type = amiibo.type
-                    existingEntity.featured = amiibo.featured
-                    existingEntity.color = Int32(amiibo.color)
-                    
-                    // Save release data as string (Android approach)
-                    existingEntity.setValue(convertReleaseToString(amiibo.release), forKey: "releaseData")
-                    
-                    // Keep existing collection/wishlist status
-                } else {
-                    // Create new
-                    let newEntity = AmiiboEntity(context: context)
-                    newEntity.amiiboSeries = amiibo.amiiboSeries
-                    newEntity.character = amiibo.character
-                    newEntity.gameSeries = amiibo.gameSeries
-                    newEntity.head = amiibo.head
-                    newEntity.image = amiibo.image
-                    newEntity.name = amiibo.name
-                    newEntity.tail = amiibo.tail
-                    newEntity.type = amiibo.type
-                    newEntity.featured = amiibo.featured
-                    newEntity.color = Int32(amiibo.color)
-                    newEntity.isInCollectionValue = false
-                    newEntity.isInWishlistValue = false
-                    
-                    // Save release data as string (Android approach)
-                    newEntity.setValue(convertReleaseToString(amiibo.release), forKey: "releaseData")
+        let items = Array(amiibos)
+        context.performAndWait {
+            for amiibo in items {
+                let request: NSFetchRequest<AmiiboEntity> = AmiiboEntity.fetchRequest()
+                request.predicate = NSPredicate(format: "tail == %@", amiibo.tail)
+                request.fetchLimit = 1
+                
+                do {
+                    let existingEntities = try context.fetch(request)
+                    if let existingEntity = existingEntities.first {
+                        // Update existing
+                        existingEntity.amiiboSeries = amiibo.amiiboSeries
+                        existingEntity.character = amiibo.character
+                        existingEntity.gameSeries = amiibo.gameSeries
+                        existingEntity.head = amiibo.head
+                        existingEntity.image = amiibo.image
+                        existingEntity.name = amiibo.name
+                        existingEntity.tail = amiibo.tail
+                        existingEntity.type = amiibo.type
+                        existingEntity.featured = amiibo.featured
+                        existingEntity.color = Int32(amiibo.color)
+                        
+                        // Save release data as string (Android approach)
+                        existingEntity.setValue(convertReleaseToString(amiibo.release), forKey: "releaseData")
+                        
+                        // Keep existing collection/wishlist status
+                    } else {
+                        // Create new
+                        let newEntity = AmiiboEntity(context: context)
+                        newEntity.amiiboSeries = amiibo.amiiboSeries
+                        newEntity.character = amiibo.character
+                        newEntity.gameSeries = amiibo.gameSeries
+                        newEntity.head = amiibo.head
+                        newEntity.image = amiibo.image
+                        newEntity.name = amiibo.name
+                        newEntity.tail = amiibo.tail
+                        newEntity.type = amiibo.type
+                        newEntity.featured = amiibo.featured
+                        newEntity.color = Int32(amiibo.color)
+                        newEntity.isInCollectionValue = false
+                        newEntity.isInWishlistValue = false
+                        
+                        // Save release data as string (Android approach)
+                        newEntity.setValue(convertReleaseToString(amiibo.release), forKey: "releaseData")
+                    }
+                } catch {
+                    print("Failed to upsert amiibo: \(error)")
                 }
-            } catch {
-                print("Failed to upsert amiibo: \(error)")
             }
+            save()
         }
-        save()
     }
     
     // Convert Release to string (Android approach: "au,eu,jp,na")

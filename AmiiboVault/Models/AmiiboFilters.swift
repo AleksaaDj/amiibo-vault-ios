@@ -20,6 +20,8 @@ struct AmiiboFilters {
         "Pikmin",
         "Pokemon",
         "Power Pros",
+        "Pragmata",
+        "Resident Evil",
         "Shovel Knight",
         "Skylanders",
         "Splatoon",

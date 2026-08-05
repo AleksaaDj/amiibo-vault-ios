@@ -9,6 +9,7 @@ import SwiftUI
 import CoreData
 import Firebase
 import FirebaseAnalytics
+import FirebaseDatabase
 import FacebookCore
 import AppTrackingTransparency
 import os.log
@@ -126,42 +127,10 @@ struct AmiiboVaultApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
     init() {
-        print("========== AMIIBO VAULT APP STARTING ==========")
-        print("🚀 AmiiboVaultApp: App initializing...")
-        
-        // TEST: Force LocalJsonService initialization immediately
-        print("TEST: About to access LocalJsonService.shared...")
-        let testService = LocalJsonService.shared
-        print("TEST: LocalJsonService.shared accessed")
-        
-        // TEST: Try to find and validate files immediately
-        if let url = Bundle.main.url(forResource: "amiibo", withExtension: "json") {
-            print("TEST SUCCESS: Found amiibo.json at: \(url.path)")
-            // Try to read and validate
-            if let data = try? Data(contentsOf: url) {
-                print("TEST: File size: \(data.count) bytes")
-                if let _ = try? JSONSerialization.jsonObject(with: data) {
-                    print("TEST: ✅ JSON is VALID")
-                } else {
-                    print("TEST: ❌ JSON is INVALID")
-                }
-            }
-        } else {
-            print("TEST FAIL: amiibo.json NOT found via Bundle.main.url")
-            print("TEST: Bundle resourcePath: \(Bundle.main.resourcePath ?? "nil")")
-        }
-
         FirebaseApp.configure()
-        
-        // Enable Analytics collection (should be enabled by default)
+        Database.database().isPersistenceEnabled = true
         Analytics.setAnalyticsCollectionEnabled(true)
-        
-        // Initialize PurchaseManager to register transaction observer for App Store promotion
-        // This ensures SKPaymentQueue observer is registered at app launch
         _ = PurchaseManager.shared
-        
-        NSLog("🚀 AmiiboVaultApp: App initialization complete")
-        print("🚀 AmiiboVaultApp: App initialization complete")
     }
 
     var body: some Scene {

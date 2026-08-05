@@ -22,9 +22,10 @@ class AmiiboListViewModel: ObservableObject {
     private let coreDataService = CoreDataService.shared
     private let firebaseService = FirebaseService.shared
     private var cancellables = Set<AnyCancellable>()
-    private var hasCheckedAPI = false
     private var hasInitialized = false
     private var lastRefreshTime: Date?
+    /// Avoid spamming featured-amiibo Firebase on every `loadFromDatabase` (can run often from SwiftUI).
+    private var hasRequestedFeaturedThisSession = false
     
     init() {
         print("========== VIEWMODEL INIT ==========")
@@ -102,17 +103,17 @@ class AmiiboListViewModel: ObservableObject {
             featuredAmiibo = currentFeatured
         }
         
-        // Load featured Amiibo from API on every start (changes frequently)
-        if !hasCheckedAPI {
-            hasCheckedAPI = true
+        // Catalog sync when stale (nil lastRefresh or > 5 min) — picks up Firebase name / count changes after version bump.
+        if shouldRefreshData() {
             print("🔵 AmiiboListViewModel: Calling syncWithAPIInBackground with count: \(localAmiibos.count)")
             syncWithAPIInBackground(localCount: localAmiibos.count)
-            
-            // If we have local data, load featured Amiibo immediately
+        }
+        
+        if !hasRequestedFeaturedThisSession {
+            hasRequestedFeaturedThisSession = true
             if localAmiibos.count > 0 {
                 loadFeaturedAmiiboFromAPI()
             } else {
-                // If no local data, delay featured Amiibo loading until after API sync
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                     self.loadFeaturedAmiiboFromAPI()
                 }
@@ -149,48 +150,44 @@ class AmiiboListViewModel: ObservableObject {
         networkService.fetchAmiiboList()
             .sink(
                 receiveCompletion: { [weak self] completion in
-                    self?.isLoading = false
-                    if case .failure(let error) = completion {
-                        var errorDesc = error.localizedDescription
-                        
-                        // Get more detailed error if available
-                        if let detailedError = error as? LocalizedError {
-                            errorDesc = detailedError.errorDescription ?? errorDesc
-                        }
-                        
-                        // Also check for underlying error
-                        if let nsError = error as NSError? {
-                            errorDesc += "\n\nDomain: \(nsError.domain)\nCode: \(nsError.code)"
-                            if let underlyingError = nsError.userInfo[NSUnderlyingErrorKey] as? Error {
-                                errorDesc += "\nUnderlying: \(underlyingError.localizedDescription)"
+                    DispatchQueue.main.async {
+                        guard let self = self else { return }
+                        self.isLoading = false
+                        if case .failure(let error) = completion {
+                            var errorDesc = error.localizedDescription
+                            
+                            if let detailedError = error as? LocalizedError {
+                                errorDesc = detailedError.errorDescription ?? errorDesc
                             }
+                            
+                            if let nsError = error as NSError? {
+                                errorDesc += "\n\nDomain: \(nsError.domain)\nCode: \(nsError.code)"
+                                if let underlyingError = nsError.userInfo[NSUnderlyingErrorKey] as? Error {
+                                    errorDesc += "\nUnderlying: \(underlyingError.localizedDescription)"
+                                }
+                            }
+                            
+                            NSLog("❌ AmiiboListViewModel: loadFromAPI() failed: \(errorDesc)")
+                            print("❌ AmiiboListViewModel: loadFromAPI() failed: \(errorDesc)")
+                            self.errorMessage = errorDesc
+                            self.errorAlertMessage = "Failed to load Amiibo data:\n\n\(errorDesc)\n\nError type: \(type(of: error))"
+                            self.showErrorAlert = true
+                            print("🔵 Setting showErrorAlert = true, message: \(self.errorAlertMessage)")
+                        } else {
+                            NSLog("✅ AmiiboListViewModel: loadFromAPI() succeeded")
                         }
-                        
-                        NSLog("❌ AmiiboListViewModel: loadFromAPI() failed: \(errorDesc)")
-                        print("❌ AmiiboListViewModel: loadFromAPI() failed: \(errorDesc)")
-                        self?.errorMessage = errorDesc
-                        
-                        // Show alert with detailed error - force on main thread
-                        DispatchQueue.main.async {
-                            self?.errorAlertMessage = "Failed to load Amiibo data:\n\n\(errorDesc)\n\nError type: \(type(of: error))"
-                            self?.showErrorAlert = true
-                            print("🔵 Setting showErrorAlert = true, message: \(self?.errorAlertMessage ?? "nil")")
-                        }
-                    } else {
-                        NSLog("✅ AmiiboListViewModel: loadFromAPI() succeeded")
                     }
                 },
                 receiveValue: { [weak self] response in
-                    
-                    // Debug: Check first few Amiibos for release data
-                    for (_, _) in response.amiibo.prefix(3).enumerated() {
-                    }
-                    
-                    self?.saveToDatabase(response.amiibo)
-                    
-                    // Load featured Amiibo after database is populated
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        self?.loadFeaturedAmiiboFromAPI()
+                    // Publisher completes on a background queue (e.g. LocalJsonService catalog queue);
+                    // Core Data + @Published UI must run on the main queue.
+                    DispatchQueue.main.async {
+                        guard let self = self else { return }
+                        for (_, _) in response.amiibo.prefix(3).enumerated() {}
+                        self.saveToDatabase(response.amiibo)
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            self.loadFeaturedAmiiboFromAPI()
+                        }
                     }
                 }
             )
@@ -237,13 +234,7 @@ class AmiiboListViewModel: ObservableObject {
                 return
             }
             
-            // Check if we should refresh (every 5 minutes)
-            guard self.shouldRefreshData() else {
-                NSLog("🔵 AmiiboListViewModel: Should not refresh data yet")
-                return
-            }
-            
-            // Quick API check to see if there are new Amiibos
+            // Caller (`loadFromDatabase`) already gated with `shouldRefreshData()`.
             NSLog("🔵 AmiiboListViewModel: Calling networkService.fetchAmiiboList() in background")
             self.networkService.fetchAmiiboList()
                 .sink(
@@ -257,13 +248,10 @@ class AmiiboListViewModel: ObservableObject {
                         }
                     },
                     receiveValue: { response in
-                        let apiCount = response.amiibo.count
-                        
-                        // If API has more Amiibos, update database silently
-                        if apiCount > localCount {
-                            DispatchQueue.main.async {
-                                self.updateDatabaseWithAPIResponse(response)
-                            }
+                        // Always merge catalog into Core Data when fetch succeeds (same count as local still
+                        // means names/images/series may have changed on Firebase). upsert preserves collection/wishlist.
+                        DispatchQueue.main.async {
+                            self.updateDatabaseWithAPIResponse(response)
                         }
                     }
                 )
@@ -289,6 +277,8 @@ class AmiiboListViewModel: ObservableObject {
         // Update collection and wishlist
         loadCollectionAndWishlist()
         
+        lastRefreshTime = Date()
+        
         // Load featured Amiibo if we don't have one yet
         if featuredAmiibo == nil {
             loadFeaturedAmiiboFromAPI()
@@ -302,6 +292,8 @@ class AmiiboListViewModel: ObservableObject {
         let updatedAmiibos = coreDataService.getAllAmiibos(sortType: sortType)
         amiiboList = updatedAmiibos
         filteredAmiiboList = updatedAmiibos
+        
+        lastRefreshTime = Date()
         
         // Load featured Amiibo if we don't have one yet
         if featuredAmiibo == nil {
@@ -522,8 +514,8 @@ class AmiiboListViewModel: ObservableObject {
     }
     
     func refreshData() {
-        // Manual refresh - reset API check flag and reload
-        hasCheckedAPI = false
+        // Force next `loadFromDatabase` to run catalog sync (Firebase name / version changes).
+        lastRefreshTime = nil
         loadFromDatabase()
     }
     

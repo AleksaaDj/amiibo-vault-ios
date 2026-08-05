@@ -14975,6 +14975,198 @@
       },
       "tail": "04c30102",
       "type": "Figure"
+    },
+    {
+      "amiiboSeries": "Monster Hunter",
+      "character": "Ratha",
+      "gameSeries": "Monster Hunter",
+      "head": "350c0000",
+      "image": "https://raw.githubusercontent.com/8bitDream/AmiiboAPI/master/images/icon_350c0000-04fa0f02.png",
+      "name": "Ratha",
+      "release": {
+        "au": "2026-03-13",
+        "eu": "2026-03-13",
+        "jp": "2026-03-13",
+        "na": "2026-03-13"
+      },
+      "tail": "04fa0f02",
+      "type": "Figure"
+    },
+    {
+      "amiiboSeries": "Monster Hunter",
+      "character": "Ratha V",
+      "gameSeries": "Monster Hunter",
+      "head": "350d0000",
+      "image": "https://raw.githubusercontent.com/8bitDream/AmiiboAPI/master/images/icon_350d0000-04fb0f02.png",
+      "name": "Ratha V",
+      "release": {
+        "au": "2026-03-13",
+        "eu": "2026-03-13",
+        "jp": "2026-03-13",
+        "na": "2026-03-13"
+      },
+      "tail": "04fb0f02",
+      "type": "Figure"
+    },
+    {
+      "amiiboSeries": "Monster Hunter",
+      "character": "Rudy",
+      "gameSeries": "Monster Hunter",
+      "head": "350e0000",
+      "image": "https://raw.githubusercontent.com/8bitDream/AmiiboAPI/master/images/icon_350e0000-04fc0f02.png",
+      "name": "Rudy",
+      "release": {
+        "au": "2026-03-13",
+        "eu": "2026-03-13",
+        "jp": "2026-03-13",
+        "na": "2026-03-13"
+      },
+      "tail": "04fc0f02",
+      "type": "Figure"
+    },
+    {
+      "amiiboSeries": "Super Mario Bros.",
+      "character": "Mario",
+      "gameSeries": "Super Mario",
+      "head": "00000500",
+      "image": "https://raw.githubusercontent.com/8bitDream/AmiiboAPI/master/images/icon_00000500-04e90102.png",
+      "name": "Mario and Luma",
+      "release": {
+        "au": "2026-04-02",
+        "eu": "2026-04-02",
+        "jp": "2026-04-02",
+        "na": "2026-04-02"
+      },
+      "tail": "04e90102",
+      "type": "Figure"
+    },
+    {
+      "amiiboSeries": "Super Mario Bros.",
+      "character": "Rosalina",
+      "gameSeries": "Super Mario",
+      "head": "00040100",
+      "image": "https://raw.githubusercontent.com/8bitDream/AmiiboAPI/master/images/icon_00040100-04ea0102.png",
+      "name": "Rosalina and Lumas",
+      "release": {
+        "au": "2026-04-02",
+        "eu": "2026-04-02",
+        "jp": "2026-04-02",
+        "na": "2026-04-02"
+      },
+      "tail": "04ea0102",
+      "type": "Figure"
+    },
+    {
+      "amiiboSeries": "Pragmata",
+      "character": "Diana",
+      "gameSeries": "Pragmata",
+      "head": "35800000",
+      "image": "https://raw.githubusercontent.com/8bitDream/AmiiboAPI/master/images/icon_35800000-05062102.png",
+      "name": "Diana",
+      "release": {
+        "au": "2026-04-17",
+        "eu": "2026-06-11",
+        "jp": "2026-04-24",
+        "na": "2026-04-17"
+      },
+      "tail": "05062102",
+      "type": "Figure"
+    },
+    {
+      "amiiboSeries": "Resident Evil",
+      "character": "Grace Ashcroft",
+      "gameSeries": "Resident Evil",
+      "head": "35400000",
+      "image": "https://raw.githubusercontent.com/8bitDream/AmiiboAPI/master/images/icon_35400000-05032002.png",
+      "name": "Grace Ashcroft",
+      "release": {
+        "au": "2026-07-30",
+        "eu": "2026-07-30",
+        "jp": "2026-07-30",
+        "na": "2026-07-30"
+      },
+      "tail": "05032002",
+      "type": "Figure"
+    },
+    {
+      "amiiboSeries": "Resident Evil",
+      "character": "Leon S. Kennedy",
+      "gameSeries": "Resident Evil",
+      "head": "35410000",
+      "image": "https://raw.githubusercontent.com/8bitDream/AmiiboAPI/master/images/icon_35410000-05042002.png",
+      "name": "Leon S. Kennedy",
+      "release": {
+        "au": "2026-07-30",
+        "eu": "2026-07-30",
+        "jp": "2026-07-30",
+        "na": "2026-07-30"
+      },
+      "tail": "05042002",
+      "type": "Figure"
+    },
+    {
+      "amiiboSeries": "Kirby Air Riders",
+      "character": "King Dedede",
+      "gameSeries": "Kirby",
+      "head": "1f020000",
+      "image": "https://raw.githubusercontent.com/8bitDream/AmiiboAPI/master/images/icon_1f020000-04c71e03.png",
+      "name": "King Dedede & Tank Star",
+      "release": {
+        "au": "2026-07-02",
+        "eu": "2026-07-02",
+        "jp": "2026-07-02",
+        "na": "2026-07-02"
+      },
+      "tail": "04c71e03",
+      "type": "Figure"
+    },
+    {
+      "amiiboSeries": "Splatoon",
+      "character": "Shiver",
+      "gameSeries": "Splatoon",
+      "head": "08070000",
+      "image": "https://raw.githubusercontent.com/8bitDream/AmiiboAPI/master/images/icon_08070000-04f70402.png",
+      "name": "Shiver (Splatoon Raiders)",
+      "release": {
+        "au": "2026-07-23",
+        "eu": "2026-07-23",
+        "jp": "2026-07-23",
+        "na": "2026-07-23"
+      },
+      "tail": "04f70402",
+      "type": "Figure"
+    },
+    {
+      "amiiboSeries": "Splatoon",
+      "character": "Frye",
+      "gameSeries": "Splatoon",
+      "head": "08080000",
+      "image": "https://raw.githubusercontent.com/8bitDream/AmiiboAPI/master/images/icon_08080000-04f80402.png",
+      "name": "Frye (Splatoon Raiders)",
+      "release": {
+        "au": "2026-07-23",
+        "eu": "2026-07-23",
+        "jp": "2026-07-23",
+        "na": "2026-07-23"
+      },
+      "tail": "04f80402",
+      "type": "Figure"
+    },
+    {
+      "amiiboSeries": "Splatoon",
+      "character": "Big Man",
+      "gameSeries": "Splatoon",
+      "head": "08090000",
+      "image": "https://raw.githubusercontent.com/8bitDream/AmiiboAPI/master/images/icon_08090000-04f90402.png",
+      "name": "Big Man (Splatoon Raiders)",
+      "release": {
+        "au": "2026-07-23",
+        "eu": "2026-07-23",
+        "jp": "2026-07-23",
+        "na": "2026-07-23"
+      },
+      "tail": "04f90402",
+      "type": "Figure"
     }
   ]
 }

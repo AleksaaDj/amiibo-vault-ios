@@ -117030,6 +117030,117 @@
 			"gamesWiiU": [],
 			"gamesSwitch": [],
 			"gamesSwitch2": []
+		},
+		"0x350c000004fa0f02": {
+			"games3DS": [],
+			"gamesWiiU": [],
+			"gamesSwitch": [
+				{
+					"gameName": "Monster Hunter Rise",
+					"gameID": [
+						"0100B04011742000"
+					],
+					"amiiboUsage": [
+						{
+							"Usage": "Unlock Monster Hunter Stories 2 sticker set",
+							"write": false
+						}
+					]
+				}
+			],
+			"gamesSwitch2": []
+		},
+		"0x350d000004fb0f02": {
+			"games3DS": [],
+			"gamesWiiU": [],
+			"gamesSwitch": [
+				{
+					"gameName": "Monster Hunter Rise",
+					"gameID": [
+						"0100B04011742000"
+					],
+					"amiiboUsage": [
+						{
+							"Usage": "Unlock Monster Hunter Stories 2 sticker set",
+							"write": false
+						}
+					]
+				}
+			],
+			"gamesSwitch2": []
+		},
+		"0x350e000004fc0f02": {
+			"games3DS": [],
+			"gamesWiiU": [],
+			"gamesSwitch": [
+				{
+					"gameName": "Monster Hunter Rise",
+					"gameID": [
+						"0100B04011742000"
+					],
+					"amiiboUsage": [
+						{
+							"Usage": "Unlock Monster Hunter Stories 2 sticker set",
+							"write": false
+						}
+					]
+				}
+			],
+			"gamesSwitch2": []
+		},
+		"0x0000050004e90102": {
+			"games3DS": [],
+			"gamesWiiU": [],
+			"gamesSwitch": [],
+			"gamesSwitch2": []
+		},
+		"0x0004010004ea0102": {
+			"games3DS": [],
+			"gamesWiiU": [],
+			"gamesSwitch": [],
+			"gamesSwitch2": []
+		},
+		"0x3580000005062102": {
+			"games3DS": [],
+			"gamesWiiU": [],
+			"gamesSwitch": [],
+			"gamesSwitch2": []
+		},
+		"0x1f02000004c71e03": {
+			"games3DS": [],
+			"gamesWiiU": [],
+			"gamesSwitch": [],
+			"gamesSwitch2": []
+		},
+		"0x0807000004f70402": {
+			"games3DS": [],
+			"gamesWiiU": [],
+			"gamesSwitch": [],
+			"gamesSwitch2": []
+		},
+		"0x0808000004f80402": {
+			"games3DS": [],
+			"gamesWiiU": [],
+			"gamesSwitch": [],
+			"gamesSwitch2": []
+		},
+		"0x0809000004f90402": {
+			"games3DS": [],
+			"gamesWiiU": [],
+			"gamesSwitch": [],
+			"gamesSwitch2": []
+		},
+		"0x3540000005032002": {
+			"games3DS": [],
+			"gamesWiiU": [],
+			"gamesSwitch": [],
+			"gamesSwitch2": []
+		},
+		"0x3541000005042002": {
+			"games3DS": [],
+			"gamesWiiU": [],
+			"gamesSwitch": [],
+			"gamesSwitch2": []
 		}
 	}
 }
