@@ -11,7 +11,6 @@ struct AmiiboDetailsView: View {
     @State private var showingCompatibilityView = false
     @State private var currentIndex: Int = 0
     @State private var isInitialLoad = true
-    @State private var cachedUpdatedList: [Amiibo]? = nil
     @StateObject private var themeManager = ThemeManager.shared
     @StateObject private var adMobService = AdMobService.shared
     @StateObject private var analyticsService = AnalyticsService.shared
@@ -30,173 +29,161 @@ struct AmiiboDetailsView: View {
         }
     }
     
-    // Get the current amiibo from the list or fallback to the passed amiibo
+    /// Live Home catalog list (Missing/Collected/type/set aware). Nil when opened outside list context.
+    private var navigableList: [Amiibo] {
+        guard amiiboList != nil else { return [] }
+        return viewModel.filteredAmiiboList
+    }
+
     private var currentAmiibo: Amiibo {
-        if let list = amiiboList, currentIndex < list.count {
-            // Use pre-computed updated list for better performance
-            let updatedList = computeUpdatedAmiiboList(list)
-            if currentIndex < updatedList.count {
-                return updatedList[currentIndex]
-            }
-            return list[currentIndex]
+        if amiiboList != nil {
+            let list = navigableList
+            guard !list.isEmpty else { return amiibo }
+            let index = min(max(currentIndex, 0), list.count - 1)
+            return list[index]
         }
-        // Fallback to original behavior
         return viewModel.filteredAmiiboList.first { $0.head == amiibo.head && $0.tail == amiibo.tail } ?? amiibo
     }
-    
-    // Pre-compute updated amiibo list to avoid expensive lookups during rendering
-    private func computeUpdatedAmiiboList(_ list: [Amiibo]) -> [Amiibo] {
-        // Create a dictionary for O(1) lookup instead of O(n) for each item
-        let filteredDict = Dictionary(uniqueKeysWithValues: viewModel.filteredAmiiboList.map { amiibo in
-            (amiibo.head + amiibo.tail, amiibo)
-        })
-        
-        return list.map { item in
-            let key = item.head + item.tail
-            return filteredDict[key] ?? item
+
+    private func dismissDetails() {
+        isDetailsPresented = false
+        dismiss()
+    }
+
+    /// After add/remove under Missing or Collected filter, drop the current figure and show the next one.
+    private func handleNavigableListChange() {
+        guard amiiboList != nil else { return }
+        guard viewModel.collectionCatalogFilter != .all else { return }
+
+        let list = navigableList
+        if list.isEmpty {
+            dismissDetails()
+            return
+        }
+
+        if viewModel.collectionCatalogFilter != .all && currentIndex >= list.count {
+            dismissDetails()
         }
     }
-    
-    // Helper to get current amiibo from list for toolbar
-    private func getCurrentAmiiboFromList(_ list: [Amiibo]) -> Amiibo {
-        if currentIndex < list.count {
-            let item = list[currentIndex]
-            // Get updated data from view model
-            return viewModel.filteredAmiiboList.first { $0.head == item.head && $0.tail == item.tail } ?? item
-        }
-        return amiibo
-    }
-    
-    // Computed property for updated list (doesn't modify state)
-    private var updatedList: [Amiibo] {
-        guard let list = amiiboList, list.count > 1 else { return [] }
-        if let cached = cachedUpdatedList {
-            return cached
-        }
-        return computeUpdatedAmiiboList(list)
-    }
-    
+
     var body: some View {
-        // Use TabView for swipe navigation if list is provided and has more than one item
-        if let list = amiiboList, list.count > 1 {
-            ZStack {
-                // Background that extends behind tab bar to prevent white space
-                (themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(red: 1.0, green: 0.984, blue: 0.996))
-                    .ignoresSafeArea(.container, edges: .bottom)
-                
-                TabView(selection: $currentIndex) {
-                    ForEach(Array(updatedList.enumerated()), id: \.element.id) { index, updatedAmiibo in
-                        AmiiboDetailContent(
-                            amiibo: updatedAmiibo,
-                            viewModel: viewModel,
-                            isDetailsPresented: $isDetailsPresented,
-                            showingSeriesView: $showingSeriesView,
-                            showingCompatibilityView: $showingCompatibilityView,
-                            shouldHandleAds: false // Ads handled at TabView level
-                        )
-                        .tag(index)
-                        .id(updatedAmiibo.id) // Help SwiftUI optimize rendering
-                    }
+        Group {
+            if amiiboList != nil {
+                if navigableList.count > 1 {
+                    pagedDetailsView
+                } else if let onlyAmiibo = navigableList.first {
+                    singleDetailsView(amiibo: onlyAmiibo, shouldHandleAds: true)
+                } else {
+                    Color.clear
                 }
-                .tabViewStyle(.page)
-                .indexViewStyle(.page(backgroundDisplayMode: .always))
+            } else {
+                singleDetailsView(amiibo: currentAmiibo, shouldHandleAds: true)
             }
-            .onAppear {
-                // Cache the updated list when view appears (not during body evaluation)
-                if cachedUpdatedList == nil, let list = amiiboList, list.count > 1 {
-                    cachedUpdatedList = computeUpdatedAmiiboList(list)
-                }
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationTitle("")
-            .toolbarBackground(themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(red: 1.0, green: 0.984, blue: 0.996), for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        openAmazonLink(for: currentAmiibo)
-                        analyticsService.logEvent(AnalyticsService.AMIIBO_AMAZON, id: currentAmiibo.head + currentAmiibo.tail, name: currentAmiibo.name)
-                    }) {
-                        Image(systemName: "cart")
-                            .foregroundColor(.appRed)
-                            .font(.system(size: 16, weight: .medium))
-                    }
-                }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        // Haptic feedback for wishlist action
-                        HapticManager.shared.lightImpact()
-                        let isAdding = !currentAmiibo.isInWishlist
-                        viewModel.toggleWishlist(currentAmiibo)
-                        let action = currentAmiibo.isInWishlist ? "remove_from_wishlist" : "add_to_wishlist"
-                        if isAdding {
-                            // Success haptic when adding to wishlist
-                            HapticManager.shared.success()
-                        }
-                        analyticsService.logEvent(AnalyticsService.AMIIBO_ADD_WISHLIST, id: currentAmiibo.head + currentAmiibo.tail, name: action)
-                    }) {
-                        Image(systemName: currentAmiibo.isInWishlist ? "bookmark.fill" : "bookmark")
-                            .foregroundColor(.appRed)
-                            .font(.system(size: 16, weight: .medium))
-                    }
+        }
+        .onChange(of: viewModel.filteredAmiiboList) { _ in
+            handleNavigableListChange()
+        }
+    }
+
+    private var pagedDetailsView: some View {
+        ZStack {
+            (themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(red: 1.0, green: 0.984, blue: 0.996))
+                .ignoresSafeArea(.container, edges: .bottom)
+
+            TabView(selection: $currentIndex) {
+                ForEach(Array(navigableList.enumerated()), id: \.element.id) { index, item in
+                    AmiiboDetailContent(
+                        amiibo: item,
+                        viewModel: viewModel,
+                        isDetailsPresented: $isDetailsPresented,
+                        showingSeriesView: $showingSeriesView,
+                        showingCompatibilityView: $showingCompatibilityView,
+                        shouldHandleAds: false
+                    )
+                    .tag(index)
+                    .id(item.id)
                 }
             }
-            .onChange(of: currentIndex) { newIndex in
-                // Log analytics when swiping to a new amiibo
-                if newIndex < updatedList.count {
-                    let switchedAmiibo = updatedList[newIndex]
-                    analyticsService.logEvent(AnalyticsService.AMIIBO_DETAILS_OPENED, id: switchedAmiibo.head + switchedAmiibo.tail, name: switchedAmiibo.name)
-                    
-                    // Increment ad counter when swiping (skip initial load)
-                    if !isInitialLoad && !purchaseManager.isNoAdsPurchased {
-                        adMobService.showInterstitialAd {
-                            // Ad dismissed or not shown
-                        }
-                    }
-                    isInitialLoad = false
-                }
-            }
-            .onAppear {
-                // Pre-compute and cache the updated list
-                if cachedUpdatedList == nil {
-                    cachedUpdatedList = computeUpdatedAmiiboList(list)
-                }
-                
-                // Handle ad for initial load
-                if !purchaseManager.isNoAdsPurchased {
-                    adMobService.showInterstitialAd {
-                        // Ad dismissed or not shown
-                    }
+            .tabViewStyle(.page)
+            .indexViewStyle(.page(backgroundDisplayMode: .always))
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationTitle("")
+        .toolbarBackground(themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(red: 1.0, green: 0.984, blue: 0.996), for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbar { detailsToolbarContent }
+        .onChange(of: currentIndex) { newIndex in
+            let list = navigableList
+            if newIndex < list.count {
+                let switchedAmiibo = list[newIndex]
+                analyticsService.logEvent(AnalyticsService.AMIIBO_DETAILS_OPENED, id: switchedAmiibo.head + switchedAmiibo.tail, name: switchedAmiibo.name)
+
+                if !isInitialLoad && !purchaseManager.isNoAdsPurchased {
+                    adMobService.showInterstitialAd {}
                 }
                 isInitialLoad = false
             }
-            .onChange(of: viewModel.filteredAmiiboList) { _ in
-                // Clear cache when filtered list changes (e.g., collection status updated)
-                cachedUpdatedList = nil
+        }
+        .onAppear {
+            if !purchaseManager.isNoAdsPurchased {
+                adMobService.showInterstitialAd {}
             }
-            .sheet(isPresented: $showingSeriesView) {
-                AmiiboSeriesView(gameSeries: currentAmiibo.gameSeries, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)
+            isInitialLoad = false
+        }
+        .sheet(isPresented: $showingSeriesView) {
+            AmiiboSeriesView(gameSeries: currentAmiibo.gameSeries, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)
+        }
+        .fullScreenCover(isPresented: $showingCompatibilityView) {
+            AmiiboCompatibilityView(amiibo: currentAmiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)
+        }
+    }
+
+    private func singleDetailsView(amiibo: Amiibo, shouldHandleAds: Bool) -> some View {
+        AmiiboDetailContent(
+            amiibo: amiibo,
+            viewModel: viewModel,
+            isDetailsPresented: $isDetailsPresented,
+            showingSeriesView: $showingSeriesView,
+            showingCompatibilityView: $showingCompatibilityView,
+            shouldHandleAds: shouldHandleAds
+        )
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationTitle("")
+        .sheet(isPresented: $showingSeriesView) {
+            AmiiboSeriesView(gameSeries: currentAmiibo.gameSeries, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)
+        }
+        .fullScreenCover(isPresented: $showingCompatibilityView) {
+            AmiiboCompatibilityView(amiibo: currentAmiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)
+        }
+    }
+
+    @ToolbarContentBuilder
+    private var detailsToolbarContent: some ToolbarContent {
+        ToolbarItem(placement: .navigationBarTrailing) {
+            Button(action: {
+                openAmazonLink(for: currentAmiibo)
+                analyticsService.logEvent(AnalyticsService.AMIIBO_AMAZON, id: currentAmiibo.head + currentAmiibo.tail, name: currentAmiibo.name)
+            }) {
+                Image(systemName: "cart")
+                    .foregroundColor(.appRed)
+                    .font(.system(size: 16, weight: .medium))
             }
-            .fullScreenCover(isPresented: $showingCompatibilityView) {
-                AmiiboCompatibilityView(amiibo: currentAmiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)
-            }
-        } else {
-            // Single item view (original behavior)
-            AmiiboDetailContent(
-                amiibo: currentAmiibo,
-                viewModel: viewModel,
-                isDetailsPresented: $isDetailsPresented,
-                showingSeriesView: $showingSeriesView,
-                showingCompatibilityView: $showingCompatibilityView
-            )
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationTitle("")
-            .sheet(isPresented: $showingSeriesView) {
-                AmiiboSeriesView(gameSeries: currentAmiibo.gameSeries, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)
-            }
-            .fullScreenCover(isPresented: $showingCompatibilityView) {
-                AmiiboCompatibilityView(amiibo: currentAmiibo, viewModel: viewModel, isDetailsPresented: $isDetailsPresented)
+        }
+
+        ToolbarItem(placement: .navigationBarTrailing) {
+            Button(action: {
+                HapticManager.shared.lightImpact()
+                let isAdding = !currentAmiibo.isInWishlist
+                viewModel.toggleWishlist(currentAmiibo)
+                let action = currentAmiibo.isInWishlist ? "remove_from_wishlist" : "add_to_wishlist"
+                if isAdding {
+                    HapticManager.shared.success()
+                }
+                analyticsService.logEvent(AnalyticsService.AMIIBO_ADD_WISHLIST, id: currentAmiibo.head + currentAmiibo.tail, name: action)
+            }) {
+                Image(systemName: currentAmiibo.isInWishlist ? "bookmark.fill" : "bookmark")
+                    .foregroundColor(.appRed)
+                    .font(.system(size: 16, weight: .medium))
             }
         }
     }
@@ -231,7 +218,10 @@ struct AmiiboDetailContent: View {
     @StateObject private var analyticsService = AnalyticsService.shared
     @StateObject private var purchaseManager = PurchaseManager.shared
     @State private var showingSuccessAnimation = false
-    
+    @State private var catalogRefreshToken = 0
+
+    private let filterListRefreshDelay: TimeInterval = 1.2
+
     init(amiibo: Amiibo, viewModel: AmiiboListViewModel, isDetailsPresented: Binding<Bool>, showingSeriesView: Binding<Bool>, showingCompatibilityView: Binding<Bool>, shouldHandleAds: Bool = true) {
         self.amiibo = amiibo
         self.viewModel = viewModel
@@ -341,9 +331,16 @@ struct AmiiboDetailContent: View {
                             analyticsService.logEvent(AnalyticsService.AMIIBO_ADD_COLLECTION, id: amiibo.head + amiibo.tail, name: "remove_from_collection")
                         } else {
                             viewModel.addToCollection(amiibo)
-                            // Success haptic and animation
                             HapticManager.shared.success()
                             showingSuccessAnimation = true
+                            if viewModel.collectionCatalogFilter != .all {
+                                catalogRefreshToken += 1
+                                let token = catalogRefreshToken
+                                DispatchQueue.main.asyncAfter(deadline: .now() + filterListRefreshDelay) {
+                                    guard token == catalogRefreshToken else { return }
+                                    viewModel.applyCurrentFilters()
+                                }
+                            }
                             analyticsService.logEvent(AnalyticsService.AMIIBO_ADD_COLLECTION, id: amiibo.head + amiibo.tail, name: "add_to_collection")
                         }
                     }) {
@@ -438,7 +435,6 @@ struct AmiiboDetailContent: View {
             }
         }
         .overlay {
-            // Success animation overlay - no message text to avoid overlap
             if showingSuccessAnimation {
                 SuccessAnimationView(isShowing: $showingSuccessAnimation, message: "")
             }

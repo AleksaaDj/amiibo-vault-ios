@@ -117141,6 +117141,31 @@
 			"gamesWiiU": [],
 			"gamesSwitch": [],
 			"gamesSwitch2": []
+		},
+		"0x1f04000004ca1e03": {
+			"games3DS": [],
+			"gamesWiiU": [],
+			"gamesSwitch": [],
+			"gamesSwitch2": [
+				{
+					"gameName": "Kirby Air Riders",
+					"gameID": [
+						"040077201BE50000"
+					],
+					"amiiboUsage": [
+						{
+							"Usage": "Race and train up a computer-controlled Figure Player of the character / Change main menu cursor doll to match amiibo",
+							"write": true
+						}
+					]
+				}
+			]
+		},
+		"0x010d000004a70902": {
+			"games3DS": [],
+			"gamesWiiU": [],
+			"gamesSwitch": [],
+			"gamesSwitch2": []
 		}
 	}
 }

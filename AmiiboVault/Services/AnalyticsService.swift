@@ -16,6 +16,9 @@ class AnalyticsService: ObservableObject {
     static let AMIIBO_FILTER_TYPE_SEARCH = "filter_type_search_selected_ios"
     static let AMIIBO_FILTER_SET_SEARCH = "filter_set_search_selected_ios"
     static let AMIIBO_SORT_SEARCH = "sort_search_selected_ios"
+    static let AMIIBO_FILTER_NOT_COLLECTED = "filter_not_collected_selected_ios"
+    static let AMIIBO_UPCOMING_OPENED = "upcoming_opened_ios"
+    static let AMIIBO_UPCOMING_DETAIL = "upcoming_detail_opened_ios"
     static let AMIIBO_SOUND = "sound_clicked_ios"
     
     // Collection Screen

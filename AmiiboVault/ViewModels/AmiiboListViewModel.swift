@@ -17,6 +17,7 @@ class AmiiboListViewModel: ObservableObject {
     @Published var sortType: String?
     @Published var selectedType: String?
     @Published var selectedSet: String?
+    @Published var collectionCatalogFilter: CollectionCatalogFilter = .all
     
     private let networkService = NetworkService.shared
     private let coreDataService = CoreDataService.shared
@@ -91,9 +92,11 @@ class AmiiboListViewModel: ObservableObject {
         print("========== DATABASE CHECK ==========")
         print("🔵 AmiiboListViewModel: Found \(localAmiibos.count) items in database")
         
-        // Update UI instantly
         amiiboList = localAmiibos
-        filteredAmiiboList = localAmiibos
+        filteredAmiiboList = applyCollectionCatalogFilter(localAmiibos)
+        if let sortType, sortType.contains("Release") {
+            filteredAmiiboList = AmiiboSortHelper.sort(filteredAmiiboList, by: sortType)
+        }
         
         // Load collection and wishlist data
         loadCollectionAndWishlist()
@@ -130,13 +133,13 @@ class AmiiboListViewModel: ObservableObject {
             sortType: sortType
         )
         
-        // Update UI
         amiiboList = localAmiibos
-        filteredAmiiboList = localAmiibos
+        filteredAmiiboList = applyCollectionCatalogFilter(localAmiibos)
+        if let sortType, sortType.contains("Release") {
+            filteredAmiiboList = AmiiboSortHelper.sort(filteredAmiiboList, by: sortType)
+        }
         
-        // Load collection and wishlist data
         loadCollectionAndWishlist()
-        
         lastRefreshTime = Date()
     }
     
@@ -272,7 +275,7 @@ class AmiiboListViewModel: ObservableObject {
         )
         
         amiiboList = updatedAmiibos
-        filteredAmiiboList = updatedAmiibos
+        applyCurrentFilters()
         
         // Update collection and wishlist
         loadCollectionAndWishlist()
@@ -306,6 +309,10 @@ class AmiiboListViewModel: ObservableObject {
         searchAmiiboFiltered(name: name, type: selectedType, set: selectedSet)
     }
     
+    func applyCurrentFilters() {
+        searchAmiiboFiltered(name: searchText, type: selectedType, set: selectedSet)
+    }
+
     func searchAmiiboFiltered(name: String, type: String?, set: String?) {
         // Use database-level filtering to avoid fetching all data
         var filteredResults = coreDataService.getFilteredAmiibos(
@@ -315,90 +322,40 @@ class AmiiboListViewModel: ObservableObject {
             sortType: sortType
         )
         
-        // Apply release date sorting if needed (since Core Data can't sort by parsed date strings)
-        if let sortType = sortType, sortType.contains("Release Date") {
-            filteredResults = sortAmiiboList(sortType: sortType, amiiboList: filteredResults)
+        filteredResults = applyCollectionCatalogFilter(filteredResults)
+
+        if let sortType = sortType, sortType.contains("Release") {
+            filteredResults = AmiiboSortHelper.sort(filteredResults, by: sortType)
         }
         
-        // Update UI
         filteredAmiiboList = filteredResults
     }
-    
-    // MARK: - Filtering
-    func applyFilters() {
-        // Sorting is now handled at the database level
-        // Just refresh the current search
-        searchAmiibo(name: searchText)
-    }
-    
-    func sortAmiiboList(sortType: String, amiiboList: [Amiibo]) -> [Amiibo] {
-        switch sortType {
-        case "Name A-Z":
-            return amiiboList.sorted { $0.name < $1.name }
-        case "Name Z-A":
-            return amiiboList.sorted { $0.name > $1.name }
-        case "Series A-Z":
-            return amiiboList.sorted { $0.amiiboSeries < $1.amiiboSeries }
-        case "Series Z-A":
-            return amiiboList.sorted { $0.amiiboSeries > $1.amiiboSeries }
-        case "Character A-Z":
-            return amiiboList.sorted { $0.character < $1.character }
-        case "Character Z-A":
-            return amiiboList.sorted { $0.character > $1.character }
-        case "Release Date (Newest)":
-            return sortByReleaseDate(amiiboList: amiiboList, ascending: false)
-        case "Release Date (Oldest)":
-            return sortByReleaseDate(amiiboList: amiiboList, ascending: true)
-        default:
-            return amiiboList
+
+    func applyCollectionCatalogFilter(_ list: [Amiibo]) -> [Amiibo] {
+        switch collectionCatalogFilter {
+        case .all:
+            return list
+        case .notCollected:
+            return list.filter { !$0.isInCollection }
+        case .inCollectionOnly:
+            return list.filter { $0.isInCollection }
         }
     }
-    
-    private func sortByReleaseDate(amiiboList: [Amiibo], ascending: Bool) -> [Amiibo] {
-        // Create a cached date formatter for better performance
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        
-        // Pre-parse all dates to avoid repeated parsing during sorting
-        let amiiboWithDates = amiiboList.map { amiibo in
-            let releaseDate: Date
-            if let jp = amiibo.release?.jp, let parsedDate = formatter.date(from: jp) {
-                releaseDate = parsedDate
-            } else {
-                releaseDate = Date.distantPast
-            }
-            return (amiibo: amiibo, date: releaseDate)
-        }
-        
-        // Sort by the pre-parsed dates
-        let sorted = amiiboWithDates.sorted { first, second in
-            if ascending {
-                return first.date < second.date
-            } else {
-                return first.date > second.date
-            }
-        }
-        
-        // Extract the sorted amiibos
-        return sorted.map { $0.amiibo }
+
+    func clearAllFilters() {
+        selectedType = nil
+        selectedSet = nil
+        collectionCatalogFilter = .all
+        searchText = ""
+        searchAmiiboFiltered(name: "", type: nil, set: nil)
     }
-    
-    private func getReleaseDate(_ amiibo: Amiibo) -> Date {
-        // Sort by JP release date specifically
-        let release = amiibo.release
-        
-        if let jp = release?.jp, let jpDate = parseDate(jp) {
-            return jpDate
-        }
-        
-        // If no JP date, return a very old date so it appears at the end
-        return Date.distantPast
-    }
-    
-    private func parseDate(_ dateString: String) -> Date? {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter.date(from: dateString)
+
+    var activeFilterCount: Int {
+        var count = 0
+        if collectionCatalogFilter != .all { count += 1 }
+        if selectedType != nil { count += 1 }
+        if selectedSet != nil { count += 1 }
+        return count
     }
     
     // MARK: - Actions
@@ -408,47 +365,9 @@ class AmiiboListViewModel: ObservableObject {
     
     func setSortType(_ sortType: String?) {
         self.sortType = sortType
-        // Clear search text when sorting changes
         searchText = ""
-        // Refresh data with new sorting (no API call)
         loadFromDatabaseOnly()
     }
-    
-    // MARK: - Filter Management
-    func setTypeFilter(_ type: String?) {
-        selectedType = type
-        // Clear search text when filter changes
-        searchText = ""
-        // Apply filters with smooth transition
-        searchAmiiboFiltered(name: searchText, type: selectedType, set: selectedSet)
-    }
-    
-    func removeTypeFilter() {
-        selectedType = nil
-        // Clear search text when filter changes
-        searchText = ""
-        // Apply filters with smooth transition
-        searchAmiiboFiltered(name: searchText, type: selectedType, set: selectedSet)
-    }
-    
-    func setSetFilter(_ set: String?) {
-        selectedSet = set
-        // Clear search text when filter changes
-        searchText = ""
-        // Apply filters with smooth transition
-        searchAmiiboFiltered(name: searchText, type: selectedType, set: selectedSet)
-    }
-    
-    func removeSetFilter() {
-        selectedSet = nil
-        // Clear search text when filter changes
-        searchText = ""
-        // Apply filters with smooth transition
-        searchAmiiboFiltered(name: searchText, type: selectedType, set: selectedSet)
-    }
-    
-    
-    
     // MARK: - Collection Management (Database-Based)
     func addToCollection(_ amiibo: Amiibo) {
         coreDataService.updateAmiiboCollectionStatus(tail: amiibo.tail, isInCollection: true)
@@ -458,6 +377,9 @@ class AmiiboListViewModel: ObservableObject {
     func removeFromCollection(_ amiibo: Amiibo) {
         coreDataService.updateAmiiboCollectionStatus(tail: amiibo.tail, isInCollection: false)
         updateAmiiboInLists(amiibo, isInCollection: false)
+        if collectionCatalogFilter != .all {
+            applyCurrentFilters()
+        }
     }
     
     func isInCollection(_ amiibo: Amiibo) -> Bool {
@@ -499,14 +421,17 @@ class AmiiboListViewModel: ObservableObject {
             updatedAmiibo.isInWishlist = isInWishlist
         }
         
-        // Update in main list
+        // Reassign arrays so @Published fires without a full DB refetch (preserves details animations).
         if let index = amiiboList.firstIndex(where: { $0.tail == amiibo.tail }) {
-            amiiboList[index] = updatedAmiibo
+            var list = amiiboList
+            list[index] = updatedAmiibo
+            amiiboList = list
         }
-        
-        // Update in filtered list
+
         if let index = filteredAmiiboList.firstIndex(where: { $0.tail == amiibo.tail }) {
-            filteredAmiiboList[index] = updatedAmiibo
+            var list = filteredAmiiboList
+            list[index] = updatedAmiibo
+            filteredAmiiboList = list
         }
         
         // Update collection and wishlist arrays
@@ -517,18 +442,6 @@ class AmiiboListViewModel: ObservableObject {
         // Force next `loadFromDatabase` to run catalog sync (Firebase name / version changes).
         lastRefreshTime = nil
         loadFromDatabase()
-    }
-    
-    private func refreshCurrentData() {
-        // Refresh the current view with updated data from database
-        if searchText.isEmpty {
-            let allAmiibos = coreDataService.getAllAmiibos(sortType: sortType)
-            amiiboList = allAmiibos
-            filteredAmiiboList = allAmiibos
-        } else {
-            let searchResults = coreDataService.searchAmiibos(query: searchText, sortType: sortType)
-            filteredAmiiboList = searchResults
-        }
     }
     
     // MARK: - Collection and Wishlist Management
@@ -568,41 +481,38 @@ class AmiiboListViewModel: ObservableObject {
     }
     
     private func updateFeaturedAmiiboFromFirebase(_ firebaseData: FirebaseFeaturedAmiibo, currentFeatured: Amiibo?) {
-        // Search for the Amiibo in our local database by tail
-        if let localAmiibo = amiiboList.first(where: { $0.tail == firebaseData.tail }) {
-            
-            // Check if the Firebase Amiibo is different from current featured
-            if firebaseData.tail != currentFeatured?.tail {
-                // Remove current featured status from all Amiibos
-                if let current = currentFeatured {
-                    coreDataService.setFeaturedAmiibo(amiibo: current, featured: false, color: 0)
-                }
-                
-                // Set new featured Amiibo with a default color (you can customize this)
-                let defaultColor = 0x6B6B6B // Default gray color (24-bit, fits in Int32)
-                coreDataService.setFeaturedAmiibo(amiibo: localAmiibo, featured: true, color: defaultColor)
-                
-                // Create updated Amiibo with featured status
-                let updatedAmiibo = Amiibo(
-                    amiiboSeries: localAmiibo.amiiboSeries,
-                    character: localAmiibo.character,
-                    gameSeries: localAmiibo.gameSeries,
-                    head: localAmiibo.head,
-                    image: localAmiibo.image,
-                    name: localAmiibo.name,
-                    release: localAmiibo.release,
-                    tail: localAmiibo.tail,
-                    type: localAmiibo.type,
-                    featured: true,
-                    color: defaultColor,
-                    isInCollection: localAmiibo.isInCollection,
-                    isInWishlist: localAmiibo.isInWishlist
-                )
-                
-                // Update the published property
-                featuredAmiibo = updatedAmiibo
+        guard let localAmiibo = amiiboList.first(where: { $0.tail == firebaseData.tail }) else { return }
+
+        let firebaseImage = firebaseData.image.trimmingCharacters(in: .whitespacesAndNewlines)
+        let displayImage = firebaseImage.isEmpty ? localAmiibo.image : firebaseImage
+        let defaultColor = 0x6B6B6B
+        let tailChanged = firebaseData.tail != currentFeatured?.tail
+        let imageChanged = currentFeatured?.image != displayImage
+
+        if tailChanged {
+            if let current = currentFeatured {
+                coreDataService.setFeaturedAmiibo(amiibo: current, featured: false, color: 0)
             }
+            coreDataService.setFeaturedAmiibo(amiibo: localAmiibo, featured: true, color: defaultColor)
+        } else if imageChanged, let current = currentFeatured {
+            coreDataService.setFeaturedAmiibo(amiibo: current, featured: true, color: defaultColor)
         }
+
+        featuredAmiibo = Amiibo(
+            amiiboSeries: localAmiibo.amiiboSeries,
+            character: localAmiibo.character,
+            gameSeries: localAmiibo.gameSeries,
+            head: localAmiibo.head,
+            image: displayImage,
+            name: localAmiibo.name,
+            release: localAmiibo.release,
+            tail: localAmiibo.tail,
+            type: localAmiibo.type,
+            featured: true,
+            color: defaultColor,
+            isInCollection: localAmiibo.isInCollection,
+            isInWishlist: localAmiibo.isInWishlist
+        )
     }
     
     func loadFeaturedAmiiboFromDatabase() {

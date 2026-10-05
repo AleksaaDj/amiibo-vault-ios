@@ -514,23 +514,7 @@ class CoreDataService: ObservableObject {
         
         do {
             let entities = try context.fetch(request)
-            return entities.map { entity in
-                Amiibo(
-                    amiiboSeries: entity.amiiboSeries ?? "",
-                    character: entity.character ?? "",
-                    gameSeries: entity.gameSeries ?? "",
-                    head: entity.head ?? "",
-                    image: entity.image ?? "",
-                    name: entity.name ?? "",
-                    release: nil,
-                    tail: entity.tail ?? "",
-                    type: entity.type ?? "",
-                    featured: entity.featured,
-                    color: Int(entity.color),
-                    isInCollection: entity.isInCollectionValue,
-                    isInWishlist: entity.isInWishlistValue
-                )
-            }
+            return entities.map { amiiboFromEntity($0) }
         } catch {
             print("Failed to fetch collection amiibos: \(error)")
             return []
@@ -544,55 +528,9 @@ class CoreDataService: ObservableObject {
         
         do {
             let entities = try context.fetch(request)
-            return entities.map { entity in
-                Amiibo(
-                    amiiboSeries: entity.amiiboSeries ?? "",
-                    character: entity.character ?? "",
-                    gameSeries: entity.gameSeries ?? "",
-                    head: entity.head ?? "",
-                    image: entity.image ?? "",
-                    name: entity.name ?? "",
-                    release: nil,
-                    tail: entity.tail ?? "",
-                    type: entity.type ?? "",
-                    featured: entity.featured,
-                    color: Int(entity.color),
-                    isInCollection: entity.isInCollectionValue,
-                    isInWishlist: entity.isInWishlistValue
-                )
-            }
+            return entities.map { amiiboFromEntity($0) }
         } catch {
             print("Failed to fetch wishlist amiibos: \(error)")
-            return []
-        }
-    }
-    
-    func getNotCollectedAmiibos() -> [Amiibo] {
-        let request: NSFetchRequest<AmiiboEntity> = AmiiboEntity.fetchRequest()
-        request.predicate = NSPredicate(format: "isInCollectionValue == NO")
-        request.sortDescriptors = [NSSortDescriptor(keyPath: \AmiiboEntity.name, ascending: true)]
-        
-        do {
-            let entities = try context.fetch(request)
-            return entities.map { entity in
-                Amiibo(
-                    amiiboSeries: entity.amiiboSeries ?? "",
-                    character: entity.character ?? "",
-                    gameSeries: entity.gameSeries ?? "",
-                    head: entity.head ?? "",
-                    image: entity.image ?? "",
-                    name: entity.name ?? "",
-                    release: nil,
-                    tail: entity.tail ?? "",
-                    type: entity.type ?? "",
-                    featured: entity.featured,
-                    color: Int(entity.color),
-                    isInCollection: entity.isInCollectionValue,
-                    isInWishlist: entity.isInWishlistValue
-                )
-            }
-        } catch {
-            print("Failed to fetch not collected amiibos: \(error)")
             return []
         }
     }
@@ -649,6 +587,31 @@ class CoreDataService: ObservableObject {
         }
     }
     
+    private func amiiboFromEntity(_ entity: AmiiboEntity) -> Amiibo {
+        let release: Release?
+        if let releaseData = entity.value(forKey: "releaseData") as? String {
+            release = parseReleaseFromString(releaseData)
+        } else {
+            release = nil
+        }
+
+        return Amiibo(
+            amiiboSeries: entity.amiiboSeries ?? "",
+            character: entity.character ?? "",
+            gameSeries: entity.gameSeries ?? "",
+            head: entity.head ?? "",
+            image: entity.image ?? "",
+            name: entity.name ?? "",
+            release: release,
+            tail: entity.tail ?? "",
+            type: entity.type ?? "",
+            featured: entity.featured,
+            color: Int(entity.color),
+            isInCollection: entity.isInCollectionValue,
+            isInWishlist: entity.isInWishlistValue
+        )
+    }
+
     private func parseReleaseFromString(_ releaseData: String?) -> Release? {
         guard let releaseData = releaseData, !releaseData.isEmpty else { return nil }
         
@@ -676,31 +639,7 @@ class CoreDataService: ObservableObject {
         
         do {
             let entities = try context.fetch(request)
-            return entities.compactMap { entity in
-                // Parse release data
-                let release: Release?
-                if let releaseData = entity.value(forKey: "releaseData") as? String {
-                    release = parseReleaseFromString(releaseData)
-                } else {
-                    release = nil
-                }
-                
-                return Amiibo(
-                    amiiboSeries: entity.amiiboSeries ?? "",
-                    character: entity.character ?? "",
-                    gameSeries: entity.gameSeries ?? "",
-                    head: entity.head ?? "",
-                    image: entity.image ?? "",
-                    name: entity.name ?? "",
-                    release: release,
-                    tail: entity.tail ?? "",
-                    type: entity.type ?? "",
-                    featured: entity.featured,
-                    color: Int(entity.color),
-                    isInCollection: entity.isInCollectionValue,
-                    isInWishlist: entity.isInWishlistValue
-                )
-            }
+            return entities.map { amiiboFromEntity($0) }
         } catch {
             print("Failed to fetch featured amiibo: \(error)")
             return []

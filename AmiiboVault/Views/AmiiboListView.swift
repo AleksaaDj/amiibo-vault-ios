@@ -19,6 +19,8 @@ extension View {
 struct AmiiboListView: View {
     @ObservedObject var viewModel: AmiiboListViewModel
     @State private var showingSortOptions = false
+    @State private var showingFilterSheet = false
+    @State private var showingUpcoming = false
     @Binding var isDetailsPresented: Bool
     @State private var selectedAmiiboForDetails: Amiibo? = nil
     @State private var showingDetails = false
@@ -57,9 +59,12 @@ struct AmiiboListView: View {
             FilterControlsView(
                 sortType: $viewModel.sortType,
                 showingSortOptions: $showingSortOptions,
+                showingFilterSheet: $showingFilterSheet,
+                showingUpcoming: $showingUpcoming,
                 isGridView: $viewModel.isGridView,
                 selectedType: $viewModel.selectedType,
                 selectedSet: $viewModel.selectedSet,
+                activeFilterCount: viewModel.activeFilterCount,
                 viewModel: viewModel,
                 onToggleLayout: {
                     viewModel.toggleGridView()
@@ -163,6 +168,17 @@ struct AmiiboListView: View {
                 viewModel.setSortType(newSortType)
             })
         }
+        .sheet(isPresented: $showingFilterSheet) {
+            FilterSheetView(
+                viewModel: viewModel,
+                onClearAll: {
+                    viewModel.clearAllFilters()
+                }
+            )
+        }
+        .sheet(isPresented: $showingUpcoming) {
+            UpcomingAmiiboListView()
+        }
     }
 }
 
@@ -207,87 +223,81 @@ struct SearchBarView: View {
 struct FilterControlsView: View {
     @Binding var sortType: String?
     @Binding var showingSortOptions: Bool
+    @Binding var showingFilterSheet: Bool
+    @Binding var showingUpcoming: Bool
     @Binding var isGridView: Bool
     @Binding var selectedType: String?
     @Binding var selectedSet: String?
-    @State private var showingTypeOptions = false
-    @State private var showingSetOptions = false
+    let activeFilterCount: Int
     @ObservedObject var viewModel: AmiiboListViewModel
     let onToggleLayout: () -> Void
-    @StateObject private var themeManager = ThemeManager.shared
     @StateObject private var analyticsService = AnalyticsService.shared
     
     var body: some View {
         HStack {
-            // Type Filter Button
             Button(action: {
-                showingTypeOptions = true
-                analyticsService.logEvent(AnalyticsService.AMIIBO_FILTER_TYPE_SEARCH, name: "type_filter_opened")
+                showingFilterSheet = true
+                analyticsService.logEvent(AnalyticsService.AMIIBO_FILTER_TYPE_SEARCH, name: "filter_sheet_opened")
             }) {
-                HStack(spacing: 2) {
-                    Image(systemName: "tag")
-                        .font(.system(size: 12, weight: .regular))
-                        .foregroundColor(selectedType != nil ? .white : .appRed)
-                    Text(selectedType ?? "Type")
-                        .font(.system(size: 12, weight: .regular))
-                        .foregroundColor(selectedType != nil ? .white : .appRed)
+                HStack(spacing: 4) {
+                    Image(systemName: "line.3.horizontal.decrease.circle")
+                        .font(.system(size: 12))
+                    Text(activeFilterCount > 0 ? "Filter (\(activeFilterCount))" : "Filter")
+                        .font(.system(size: 12, weight: .semibold))
                 }
+                .foregroundColor(activeFilterCount > 0 ? .white : .appRed)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
                 .background(
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(selectedType != nil ? Color.appRed : Color.clear)
+                        .fill(activeFilterCount > 0 ? Color.appRed : Color.clear)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.appRed, lineWidth: selectedType != nil ? 0 : 1)
+                        .stroke(Color.appRed, lineWidth: activeFilterCount > 0 ? 0 : 1)
                 )
             }
-            
-            // Set Filter Button
-            Button(action: {
-                showingSetOptions = true
-                analyticsService.logEvent(AnalyticsService.AMIIBO_FILTER_SET_SEARCH, name: "set_filter_opened")
-            }) {
-                HStack(spacing: 2) {
-                    Image(systemName: "square.stack.3d.up")
-                        .font(.system(size: 12, weight: .regular))
-                        .foregroundColor(selectedSet != nil ? .white : .appRed)
-                    Text(selectedSet ?? "Set")
-                        .font(.system(size: 12, weight: .regular))
-                        .foregroundColor(selectedSet != nil ? .white : .appRed)
-                }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(selectedSet != nil ? Color.appRed : Color.clear)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.appRed, lineWidth: selectedSet != nil ? 0 : 1)
-                )
-            }
-            
-            // Sort Button
+
             Button(action: {
                 showingSortOptions = true
                 analyticsService.logEvent(AnalyticsService.AMIIBO_SORT_SEARCH, name: "sort_options_opened")
             }) {
-                HStack {
+                HStack(spacing: 4) {
                     Image(systemName: "arrow.up.arrow.down")
-                        .foregroundColor(.appRed)
+                        .font(.system(size: 12))
                     Text(sortType ?? "Sort")
-                        .font(.caption)
-                        .foregroundColor(.appRed)
+                        .font(.system(size: 12, weight: .semibold))
                 }
-                .padding(.horizontal, 6)
-                .padding(.vertical, 6)
+                .foregroundColor(.appRed)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.appRed, lineWidth: 1)
+                )
             }
-            
+
             Spacer()
-            
-            // Layout Toggle Button
+
+            Button(action: {
+                showingUpcoming = true
+                analyticsService.logEvent(AnalyticsService.AMIIBO_UPCOMING_OPENED, name: "upcoming_opened")
+            }) {
+                HStack(spacing: 4) {
+                    Image(systemName: "calendar")
+                        .font(.system(size: 12))
+                    Text("Upcoming")
+                        .font(.system(size: 12, weight: .semibold))
+                }
+                .foregroundColor(.appRed)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.appRed, lineWidth: 1)
+                )
+            }
+
             Button(action: {
                 onToggleLayout()
                 let eventName = isGridView ? AnalyticsService.AMIIBO_LIST : AnalyticsService.AMIIBO_GRID
@@ -300,12 +310,6 @@ struct FilterControlsView: View {
         }
         .padding(.horizontal, 2)
         .padding(.vertical, 4)
-        .sheet(isPresented: $showingTypeOptions) {
-            TypeFilterView(selectedType: $selectedType, viewModel: viewModel)
-        }
-        .sheet(isPresented: $showingSetOptions) {
-            SetFilterView(selectedSet: $selectedSet, viewModel: viewModel)
-        }
     }
 }
 
@@ -316,16 +320,7 @@ struct SortOptionsView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var analyticsService = AnalyticsService.shared
     
-    let sortOptions = [
-        "Name A-Z",
-        "Name Z-A",
-        "Series A-Z",
-        "Series Z-A",
-        "Character A-Z",
-        "Character Z-A",
-        "Release Date (Newest)",
-        "Release Date (Oldest)"
-    ]
+    let sortOptions = AmiiboFilters.sortTypesSearch
     
     var body: some View {
         NavigationView {
@@ -357,110 +352,6 @@ struct SortOptionsView: View {
                 .foregroundColor(.red)
             }
             .navigationTitle("Sort Options")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
-            }
-        }
-    }
-}
-
-// MARK: - Type Filter View
-struct TypeFilterView: View {
-    @Binding var selectedType: String?
-    @Environment(\.dismiss) private var dismiss
-    @ObservedObject var viewModel: AmiiboListViewModel
-    @StateObject private var analyticsService = AnalyticsService.shared
-    
-    init(selectedType: Binding<String?>, viewModel: AmiiboListViewModel = AmiiboListViewModel()) {
-        self._selectedType = selectedType
-        self.viewModel = viewModel
-    }
-    
-    var body: some View {
-        NavigationView {
-            List {
-                Button("Remove Filter") {
-                    viewModel.removeTypeFilter()
-                    dismiss()
-                }
-                .foregroundColor(.red)
-                
-                ForEach(AmiiboFilters.types, id: \.self) { type in
-                    Button(action: {
-                        viewModel.setTypeFilter(type)
-                        analyticsService.logEvent(AnalyticsService.AMIIBO_FILTER_TYPE_SEARCH, name: type)
-                        dismiss()
-                    }) {
-                        HStack {
-                            Text(type)
-                            Spacer()
-                            if selectedType == type {
-                                Image(systemName: "checkmark")
-                                    .foregroundColor(.red)
-                            }
-                        }
-                    }
-                    .foregroundColor(.primary)
-                }
-            }
-            .navigationTitle("Filter by Type")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
-            }
-        }
-    }
-}
-
-// MARK: - Set Filter View
-struct SetFilterView: View {
-    @Binding var selectedSet: String?
-    @Environment(\.dismiss) private var dismiss
-    @ObservedObject var viewModel: AmiiboListViewModel
-    @StateObject private var analyticsService = AnalyticsService.shared
-    
-    init(selectedSet: Binding<String?>, viewModel: AmiiboListViewModel = AmiiboListViewModel()) {
-        self._selectedSet = selectedSet
-        self.viewModel = viewModel
-    }
-    
-    var body: some View {
-        NavigationView {
-            List {
-                Button("Remove Filter") {
-                    viewModel.removeSetFilter()
-                    dismiss()
-                }
-                .foregroundColor(.red)
-                
-                ForEach(AmiiboFilters.sets, id: \.self) { set in
-                    Button(action: {
-                        viewModel.setSetFilter(set)
-                        analyticsService.logEvent(AnalyticsService.AMIIBO_FILTER_SET_SEARCH, name: set)
-                        dismiss()
-                    }) {
-                        HStack {
-                            Text(set)
-                            Spacer()
-                            if selectedSet == set {
-                                Image(systemName: "checkmark")
-                                    .foregroundColor(.red)
-                            }
-                        }
-                    }
-                    .foregroundColor(.primary)
-                }
-            }
-            .navigationTitle("Filter by Set")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {

@@ -250,6 +250,10 @@ struct CollectionView: View {
                 filteredList = filteredList.sorted { $0.character < $1.character }
             case "Character Z-A":
                 filteredList = filteredList.sorted { $0.character > $1.character }
+            case "Release (Asc)", "Release Date A-Z":
+                filteredList = AmiiboSortHelper.sortByRelease(amiibos: filteredList, ascending: true)
+            case "Release (Dsc)", "Release Date Z-A":
+                filteredList = AmiiboSortHelper.sortByRelease(amiibos: filteredList, ascending: false)
             default:
                 break
             }

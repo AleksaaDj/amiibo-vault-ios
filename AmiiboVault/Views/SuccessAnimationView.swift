@@ -128,4 +128,3 @@ struct ConfettiParticle: Identifiable {
 #Preview {
     SuccessAnimationView(isShowing: .constant(true), message: "Added to collection!")
 }
-

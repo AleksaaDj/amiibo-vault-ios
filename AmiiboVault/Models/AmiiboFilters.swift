@@ -42,18 +42,17 @@ struct AmiiboFilters {
     static let sortTypesSearch = [
         "Name A-Z",
         "Name Z-A",
-        "Release Date A-Z",
-        "Release Date Z-A",
+        "Release (Asc)",
+        "Release (Dsc)",
         "Series A-Z",
         "Series Z-A",
-        "Not Collected"
     ]
     
     static let sortTypes = [
         "Name A-Z",
         "Name Z-A",
-        "Release Date A-Z",
-        "Release Date Z-A",
+        "Release (Asc)",
+        "Release (Dsc)",
         "Series A-Z",
         "Series Z-A"
     ]
