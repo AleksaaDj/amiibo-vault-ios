@@ -2,16 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CFBundleDisplayName</key>
-	<string>AmiiVault</string>
-	<key>GADApplicationIdentifier</key>
-	<string>ca-app-pub-3564715368914014~7042895072</string>
-	<key>com.apple.developer.nfc.readersession.formats</key>
-	<array>
-		<string>TAG</string>
-		<string>NDEF</string>
-		<string>ISO7816</string>
-	</array>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -21,16 +11,16 @@
 			</array>
 		</dict>
 	</array>
+	<key>FacebookAdvertiserIDCollectionEnabled</key>
+	<true/>
 	<key>FacebookAppID</key>
 	<string>1348040400199028</string>
 	<key>FacebookClientToken</key>
 	<string>df606b16eb40a060c9b6ab4810c7dce4</string>
 	<key>FacebookDisplayName</key>
 	<string>Amiibo Vault iOS</string>
-	<key>FacebookAdvertiserIDCollectionEnabled</key>
-	<true/>
-	<key>NSUserTrackingUsageDescription</key>
-	<string>We use this to provide you with personalized ads and improve your experience. Your data is kept private and secure.</string>
+	<key>GADApplicationIdentifier</key>
+	<string>ca-app-pub-3564715368914014~7042895072</string>
 	<key>SKAdNetworkItems</key>
 	<array>
 		<dict>
@@ -213,6 +203,12 @@
 			<key>SKAdNetworkIdentifier</key>
 			<string>3qcr597p9d.skadnetwork</string>
 		</dict>
+	</array>
+	<key>com.apple.developer.nfc.readersession.formats</key>
+	<array>
+		<string>TAG</string>
+		<string>NDEF</string>
+		<string>ISO7816</string>
 	</array>
 </dict>
 </plist>

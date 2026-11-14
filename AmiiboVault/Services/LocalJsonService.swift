@@ -180,17 +180,14 @@ class LocalJsonService {
 
             let fullId = "0x\(normalizedHead)\(normalizedTail)"
 
-            let gamesDataRaw = cachedGamesDataRaw?[fullId]
+            // Firebase RTDB omits empty arrays/objects, so figures with no Nintendo usage
+            // have no gamesInfo key after import. Treat that as empty lists so the UI
+            // shows "No compatible games" instead of an error.
+            let foundGamesDataRaw = cachedGamesDataRaw?[fullId]
                 ?? cachedGamesDataRaw?["0x\(foundAmiibo.head)\(foundAmiibo.tail)"]
                 ?? cachedGamesDataRaw?["0x\(normalizedTail)"]
                 ?? cachedGamesDataRaw?[tail]
-
-            guard let foundGamesDataRaw = gamesDataRaw else {
-                struct GamesNotFoundError: LocalizedError {
-                    var errorDescription: String? { "Amiibo games data not found for tail" }
-                }
-                return Fail(error: GamesNotFoundError()).eraseToAnyPublisher()
-            }
+                ?? [:]
 
             let games3DS = (foundGamesDataRaw["games3DS"] as? [[String: Any]])?.map { gameDict -> Games3DS in
                 let gameID = gameDict["gameID"] as? [String] ?? []
@@ -278,6 +275,24 @@ class LocalJsonService {
             }
             return Fail(error: CompatibilityError("Error reading local JSON: \(error.localizedDescription)"))
                 .eraseToAnyPublisher()
+        }
+    }
+
+    /// Unique `gameName`s from catalog games_info (Nintendo + third-party amiibo titles).
+    func uniqueAmiiboGameNames(completion: @escaping ([String]) -> Void) {
+        ensureCatalogOrBundled { _ in
+            var names = Set<String>()
+            for (_, entry) in self.cachedGamesDataRaw ?? [:] {
+                for key in ["games3DS", "gamesWiiU", "gamesSwitch", "gamesSwitch2"] {
+                    guard let games = entry[key] as? [[String: Any]] else { continue }
+                    for game in games {
+                        let name = (game["gameName"] as? String)?
+                            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                        if !name.isEmpty { names.insert(name) }
+                    }
+                }
+            }
+            completion(Array(names))
         }
     }
 

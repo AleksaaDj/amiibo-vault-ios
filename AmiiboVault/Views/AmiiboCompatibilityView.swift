@@ -1,5 +1,6 @@
 import SwiftUI
 import Combine
+import Kingfisher
 
 struct AmiiboCompatibilityView: View {
     let amiibo: Amiibo
@@ -12,6 +13,8 @@ struct AmiiboCompatibilityView: View {
     @State private var errorMessage = ""
     @State private var showErrorAlert = false
     @State private var amiiboGames: AmiiboGames?
+    @State private var gamesByName: [String: Game] = [:]
+    @State private var isGameDetailsPresented = false
     @StateObject private var themeManager = ThemeManager.shared
     @StateObject private var adMobService = AdMobService.shared
     @StateObject private var purchaseManager = PurchaseManager.shared
@@ -21,6 +24,7 @@ struct AmiiboCompatibilityView: View {
     private let tabs = ["Switch", "Switch 2", "3DS", "Wii U"]
     
     var body: some View {
+        NavigationView {
         VStack(spacing: 0) {
             // Custom Navigation Bar
             HStack {
@@ -95,7 +99,10 @@ struct AmiiboCompatibilityView: View {
                 ScrollView {
                     LazyVStack(spacing: 12) {
                         ForEach(getGames(for: selectedTab), id: \.id) { game in
-                            GameCompatibilityCard(game: game)
+                            GameCompatibilityCard(
+                                game: game,
+                                isGameDetailsPresented: $isGameDetailsPresented
+                            )
                         }
                         
                         // Banner Ad - only if ads not purchased
@@ -111,7 +118,13 @@ struct AmiiboCompatibilityView: View {
             }
         }
         .background(themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(red: 1.0, green: 0.984, blue: 0.996))
+        .navigationTitle(amiibo.name)
+        .toolbar(.hidden, for: .navigationBar)
+        }
+        .navigationViewStyle(StackNavigationViewStyle())
+        .accentColor(.appRed)
         .onAppear {
+            reloadCachedGames()
             loadCompatibilityData()
             // Show interstitial ad (every 3rd time) - only if ads not purchased
             if !purchaseManager.isNoAdsPurchased {
@@ -119,6 +132,9 @@ struct AmiiboCompatibilityView: View {
                     // Ad dismissed or not shown
                 }
             }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .gamesCacheDidChange).receive(on: DispatchQueue.main)) { _ in
+            reloadCachedGames()
         }
         .alert("Compatibility Data Error", isPresented: $showErrorAlert) {
             Button("OK", role: .cancel) { }
@@ -131,6 +147,20 @@ struct AmiiboCompatibilityView: View {
     }
     
     
+    private func reloadCachedGames() {
+        gamesByName = GameDisplay.gamesByNormalizedName(CoreDataService.shared.getAllGames())
+    }
+
+    private func compatibilityItem(name: String, usage: [AmiiboUsage], index: Int) -> GameCompatibilityItem {
+        GameCompatibilityItem(
+            id: "\(selectedTab)-\(index)-\(name)",
+            name: name,
+            usage: usage.first?.usage ?? "",
+            write: usage.first?.write ?? false,
+            matchingGame: GameDisplay.matchingGame(named: name, in: gamesByName)
+        )
+    }
+
     private func loadCompatibilityData() {
         isLoading = true
         showError = false
@@ -189,36 +219,20 @@ struct AmiiboCompatibilityView: View {
         
         switch tab {
         case 0: // Switch
-            return amiiboGames.gamesSwitch.map { game in
-                GameCompatibilityItem(
-                    name: game.gameName,
-                    usage: game.amiiboUsage.first?.usage ?? "",
-                    write: game.amiiboUsage.first?.write ?? false
-                )
+            return amiiboGames.gamesSwitch.enumerated().map { index, game in
+                compatibilityItem(name: game.gameName, usage: game.amiiboUsage, index: index)
             }
         case 1: // Switch 2
-            return amiiboGames.gamesSwitch2.map { game in
-                GameCompatibilityItem(
-                    name: game.gameName,
-                    usage: game.amiiboUsage.first?.usage ?? "",
-                    write: game.amiiboUsage.first?.write ?? false
-                )
+            return amiiboGames.gamesSwitch2.enumerated().map { index, game in
+                compatibilityItem(name: game.gameName, usage: game.amiiboUsage, index: index)
             }
         case 2: // 3DS
-            return amiiboGames.games3DS.map { game in
-                GameCompatibilityItem(
-                    name: game.gameName,
-                    usage: game.amiiboUsage.first?.usage ?? "",
-                    write: game.amiiboUsage.first?.write ?? false
-                )
+            return amiiboGames.games3DS.enumerated().map { index, game in
+                compatibilityItem(name: game.gameName, usage: game.amiiboUsage, index: index)
             }
         case 3: // Wii U
-            return amiiboGames.gamesWiiU.map { game in
-                GameCompatibilityItem(
-                    name: game.gameName,
-                    usage: game.amiiboUsage.first?.usage ?? "",
-                    write: game.amiiboUsage.first?.write ?? false
-                )
+            return amiiboGames.gamesWiiU.enumerated().map { index, game in
+                compatibilityItem(name: game.gameName, usage: game.amiiboUsage, index: index)
             }
         default:
             return []
@@ -226,29 +240,42 @@ struct AmiiboCompatibilityView: View {
     }
     
     struct GameCompatibilityItem: Identifiable {
-        let id = UUID()
+        let id: String
         let name: String
         let usage: String
         let write: Bool
+        let matchingGame: Game?
     }
 }
 
 struct GameCompatibilityCard: View {
     let game: AmiiboCompatibilityView.GameCompatibilityItem
+    @Binding var isGameDetailsPresented: Bool
     @State private var isExpanded = false
     @StateObject private var themeManager = ThemeManager.shared
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Header - always visible
-            HStack {
-                Text(game.name)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(themeManager.isDarkMode ? .white : .primary)
+            HStack(alignment: .center, spacing: 0) {
+                coverImage
+                    .frame(width: 80, height: 80)
+                    .clipped()
+                    .clipShape(
+                        UnevenRoundedRectangle(
+                            topLeadingRadius: 12,
+                            bottomLeadingRadius: isExpanded ? 0 : 12,
+                            bottomTrailingRadius: 0,
+                            topTrailingRadius: 0
+                        )
+                    )
                 
-                Spacer()
-                
-                HStack(spacing: 8) {
+                HStack(alignment: .center, spacing: 8) {
+                    Text(game.name)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(themeManager.isDarkMode ? .white : .primary)
+                        .lineLimit(2)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    
                     if game.write {
                         Text("Read/Write")
                             .font(.system(size: 12, weight: .medium))
@@ -271,8 +298,10 @@ struct GameCompatibilityCard: View {
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(themeManager.isDarkMode ? .white : .gray)
                 }
+                .padding(.leading, 12)
+                .padding(.trailing, 10)
             }
-            .padding()
+            .frame(height: 80)
             .contentShape(Rectangle())
             .onTapGesture {
                 withAnimation(.easeInOut(duration: 0.3)) {
@@ -280,7 +309,6 @@ struct GameCompatibilityCard: View {
                 }
             }
             
-            // Expandable content
             if isExpanded {
                 VStack(alignment: .leading, spacing: 12) {
                     Divider()
@@ -297,12 +325,53 @@ struct GameCompatibilityCard: View {
                             .lineLimit(nil)
                     }
                     .padding(.horizontal)
-                    .padding(.bottom)
+                    
+                    if let matchingGame = game.matchingGame {
+                        NavigationLink(destination: GameDetailsView(
+                            game: matchingGame,
+                            isGameDetailsPresented: $isGameDetailsPresented
+                        )) {
+                            Text("Game Details")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(themeManager.isDarkMode ? .black : .white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 44)
+                                .background(themeManager.isDarkMode ? Color.white : Color.black)
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                        }
+                        .padding(.horizontal)
+                    }
                 }
+                .padding(.bottom)
             }
         }
         .background(themeManager.isDarkMode ? Color.black : Color(.systemGray6))
         .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    @ViewBuilder
+    private var coverImage: some View {
+        if let imageUrlString = game.matchingGame?.backgroundImage,
+           !imageUrlString.isEmpty,
+           let imageUrl = URL(string: imageUrlString) {
+            KFImage(imageUrl)
+                .placeholder { coverPlaceholder }
+                .onFailure { _ in }
+                .fade(duration: 0.15)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+        } else {
+            coverPlaceholder
+        }
+    }
+
+    private var coverPlaceholder: some View {
+        Rectangle()
+            .fill(Color.gray.opacity(0.3))
+            .overlay(
+                Image(systemName: "gamecontroller")
+                    .foregroundColor(.gray)
+            )
     }
 }
 

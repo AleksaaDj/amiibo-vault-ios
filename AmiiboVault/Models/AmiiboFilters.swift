@@ -16,7 +16,7 @@ struct AmiiboFilters {
         "Metroid",
         "Monster Hunter",
         "Monster Hunter Rise",
-        "My Mario Wooden Block",
+        "My Mario Wooden Blocks",
         "Pikmin",
         "Pokemon",
         "Power Pros",

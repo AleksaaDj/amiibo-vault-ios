@@ -1,21 +1,20 @@
 import SwiftUI
+import UIKit
 
 struct FeaturedAmiiboCard: View {
     let featuredAmiibo: Amiibo?
-    @StateObject private var themeManager = ThemeManager.shared
+    @State private var cardColor = Color.yellow
     
     var body: some View {
         if let amiibo = featuredAmiibo {
             ZStack {
-                // Background card with yellow color
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.yellow)
+                    .fill(cardColor)
                     .frame(height: 90)
-                    .shadow(color: Color.yellow, radius: 6)
-                    .offset(y: 15) // Offset to match Android design
+                    .shadow(color: cardColor.opacity(0.85), radius: 6)
+                    .offset(y: 15)
                 
                 HStack {
-                    // Left side - Text content
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Featured amiibo")
                             .font(.system(size: 16, weight: .regular))
@@ -34,9 +33,19 @@ struct FeaturedAmiiboCard: View {
                     
                     Spacer()
                     
-                    // Right side - Amiibo image (extends beyond card edges)
-                    FeaturedAmiiboKingfisherImage(url: amiibo.image, width: 140, height: 140, cornerRadius: 8, shadowRadius: 8)
-                    .offset(x: 15) // Extend more over top edge
+                    FeaturedAmiiboKingfisherImage(
+                        url: amiibo.image,
+                        width: 140,
+                        height: 140,
+                        cornerRadius: 8,
+                        shadowRadius: 8,
+                        onImageLoaded: { image in
+                            if let uiColor = image.averageColor {
+                                cardColor = Color(uiColor)
+                            }
+                        }
+                    )
+                    .offset(x: 15)
                 }
                 .padding(.horizontal, 20)
             }

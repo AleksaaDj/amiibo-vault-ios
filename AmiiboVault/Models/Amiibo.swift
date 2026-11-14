@@ -177,6 +177,12 @@ struct Genre: Codable, Identifiable, Hashable {
     let id: Int?
     let name: String?
     let slug: String?
+
+    init(id: Int?, name: String?, slug: String?) {
+        self.id = id
+        self.name = name
+        self.slug = slug
+    }
     
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -194,6 +200,12 @@ struct Platform: Codable, Identifiable, Hashable {
     let id: Int?
     let name: String?
     let slug: String?
+
+    init(id: Int?, name: String?, slug: String?) {
+        self.id = id
+        self.name = name
+        self.slug = slug
+    }
     
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -210,6 +222,11 @@ struct Platform: Codable, Identifiable, Hashable {
 struct Screenshot: Codable, Identifiable, Hashable {
     let id: Int?
     let image: String?
+
+    init(id: Int?, image: String?) {
+        self.id = id
+        self.image = image
+    }
     
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -220,14 +237,6 @@ struct Screenshot: Codable, Identifiable, Hashable {
     enum CodingKeys: String, CodingKey {
         case id, image
     }
-}
-
-// MARK: - Games API Response
-struct GamesListResponse: Codable {
-    let results: [Game]
-    let count: Int
-    let next: String?
-    let previous: String?
 }
 
 // MARK: - Amiibo Games (for compatibility)

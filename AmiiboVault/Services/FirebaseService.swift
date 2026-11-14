@@ -11,22 +11,6 @@ class FirebaseService {
         ref = database.reference()
     }
     
-    // MARK: - RAWG API key (same node as Android: `/Rawg`)
-    func fetchRawgApiKey(completion: @escaping (Result<String, Error>) -> Void) {
-        ref.child("Rawg").observeSingleEvent(of: .value) { snapshot in
-            guard let key = snapshot.value as? String else {
-                completion(.failure(FirebaseError.noData))
-                return
-            }
-            let trimmed = key.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !trimmed.isEmpty else {
-                completion(.failure(FirebaseError.invalidData))
-                return
-            }
-            completion(.success(trimmed))
-        }
-    }
-
     // MARK: - Featured Amiibo
     func fetchFeaturedAmiibo(completion: @escaping (Result<FirebaseFeaturedAmiibo, Error>) -> Void) {
         ref.child("Amiibo").observeSingleEvent(of: .value) { snapshot in

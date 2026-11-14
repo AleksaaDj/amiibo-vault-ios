@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 // Suppress deprecation warning for NavigationLink - will be updated when migrating to NavigationStack
 
@@ -100,20 +101,30 @@ struct AmiiboListItemView: View {
     let viewModel: AmiiboListViewModel
     @Binding var isDetailsPresented: Bool
     @StateObject private var themeManager = ThemeManager.shared
+    @State private var imageWashColor = Color.gray.opacity(0.12)
     
     var body: some View {
         ZStack(alignment: .leading) {
-            // Background color behind the image
-            Color.gray // Replace with desired color
-                .frame(width: 88) // Adjust width and height as needed
-                .cornerRadius(10)
-                .opacity(0.1)
+            imageWashColor
+                .frame(width: 88)
+                .frame(maxHeight: .infinity)
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                         
             // Main content
             HStack(spacing: 4) {
-                // Amiibo Image with white shadow
-                AmiiboListKingfisherImage(url: amiibo.image, width: 76, height: 76, cornerRadius: 6, shadowRadius: 6)
-                    .padding(.vertical, 5) // Add padding to show full shadow
+                AmiiboListKingfisherImage(
+                    url: amiibo.image,
+                    width: 76,
+                    height: 76,
+                    cornerRadius: 6,
+                    shadowRadius: 6,
+                    onImageLoaded: { image in
+                        if let uiColor = image.averageColor {
+                            imageWashColor = Color(uiColor)
+                        }
+                    }
+                )
+                    .padding(.vertical, 5)
                 
                 // Text Content
                 VStack(alignment: .leading, spacing: 0) {

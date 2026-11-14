@@ -9,12 +9,13 @@ class GamesViewModel: ObservableObject {
     @Published var searchText = ""
     @Published var selectedSortType: String?
     @Published var selectedGenre: String?
+    @Published var selectedConsole: String?
     
     private let coreDataService = CoreDataService.shared
-    private let rawgApiService = RawgApiService()
+    private let igdbApiService = IgdbApiService.shared
     private var cancellables = Set<AnyCancellable>()
+    private var isFetchingIgdb = false
     
-    // Available sort options
     let sortOptions = [
         "Name (A-Z)",
         "Name (Z-A)",
@@ -24,27 +25,8 @@ class GamesViewModel: ObservableObject {
         "Release Date (Oldest)"
     ]
     
-    // Available genres (predefined list matching Android)
-    let availableGenres = [
-        "Action",
-        "Adventure", 
-        "RPG",
-        "Strategy",
-        "Shooter",
-        "Casual",
-        "Simulation",
-        "Puzzle",
-        "Arcade",
-        "Platformer",
-        "Massively Multiplayer",
-        "Racing",
-        "Sports",
-        "Fighting",
-        "Family",
-        "Board Games",
-        "Card",
-        "Educational"
-    ]
+    let availableGenreOptions = GameDisplay.genreOptions
+    let availableConsoles = GameDisplay.consoles
     
     init() {
         loadGames()
@@ -52,130 +34,125 @@ class GamesViewModel: ObservableObject {
     }
     
     private func setupSearchPublisher() {
-        Publishers.CombineLatest3(
+        Publishers.CombineLatest4(
             $searchText,
             $selectedSortType,
-            $selectedGenre
+            $selectedGenre,
+            $selectedConsole
         )
         .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
-        .sink { [weak self] searchText, sortType, genre in
-            self?.performSearch(searchText: searchText, sortType: sortType, genre: genre)
+        .sink { [weak self] searchText, sortType, genre, console in
+            self?.performSearch(searchText: searchText, sortType: sortType, genre: genre, console: console)
         }
         .store(in: &cancellables)
     }
     
     func loadGames() {
-        isLoading = true
         errorMessage = nil
-        
-        // First check local database
         let localGames = coreDataService.getAllGames()
-        
-        if localGames.isEmpty {
-            // No local data, fetch from API
-            fetchGamesFromAPI()
+        if !localGames.isEmpty {
+            let sortedGames = localGames.sorted { ($0.name ?? "") < ($1.name ?? "") }
+            games = sortedGames
+            applyCurrentFilters()
+            isLoading = false
         } else {
-            // Check if games have valid images (like Android - images should always be present)
-            let gamesWithMissingImages = localGames.filter { game in
-                guard let imageUrl = game.backgroundImage, !imageUrl.isEmpty else { return true }
-                return false
-            }
-            
-            // If any games are missing images, re-fetch from API to ensure we have complete data
-            if !gamesWithMissingImages.isEmpty {
-                // Some games are missing images, re-fetch to get complete data
-                fetchGamesFromAPI()
-            } else {
-                // Use local data and sort by name
-                let sortedGames = localGames.sorted { ($0.name ?? "") < ($1.name ?? "") }
-                games = sortedGames
-                filteredGames = sortedGames
-                
-                // Preload first few images before showing the list
-                preloadGameImages(sortedGames.prefix(10))
-            }
+            isLoading = true
         }
-    }
-    
-    private func preloadGameImages(_ games: ArraySlice<Game>) {
-        let group = DispatchGroup()
-        
-        for game in games {
-            guard let imageUrlString = game.backgroundImage,
-                  let imageUrl = URL(string: imageUrlString) else { continue }
-            
-            group.enter()
-            URLSession.shared.dataTask(with: imageUrl) { _, _, _ in
-                group.leave()
-            }.resume()
-        }
-        
-        group.notify(queue: .main) {
-            self.isLoading = false
+
+        let storedVersion = UserDefaults.standard.integer(forKey: IgdbConfig.gamesCacheVersionKey)
+        let hasLegacyRawg = localGames.contains { $0.backgroundImage?.contains("rawg.io") == true }
+        let needsFetch = storedVersion < IgdbConfig.gamesCacheVersion || localGames.isEmpty || hasLegacyRawg
+        if needsFetch {
+            fetchGamesFromAPI()
         }
     }
     
     private func fetchGamesFromAPI() {
-        rawgApiService.fetchNintendoGames { [weak self] result in
+        guard !isFetchingIgdb else { return }
+        isFetchingIgdb = true
+        igdbApiService.fetchGames { [weak self] result in
             DispatchQueue.main.async {
+                guard let self else { return }
+                self.isFetchingIgdb = false
                 switch result {
                 case .success(let fetchedGames):
-                    // Sort by name by default
+                    guard !fetchedGames.isEmpty else {
+                        self.isLoading = false
+                        return
+                    }
+                    self.coreDataService.replaceAllGames(fetchedGames)
+                    UserDefaults.standard.set(
+                        IgdbConfig.gamesCacheVersion,
+                        forKey: IgdbConfig.gamesCacheVersionKey
+                    )
                     let sortedGames = fetchedGames.sorted { ($0.name ?? "") < ($1.name ?? "") }
-                    self?.games = sortedGames
-                    self?.filteredGames = sortedGames
-                    self?.coreDataService.saveGames(sortedGames)
-                    self?.isLoading = false
-                case .failure(let error):
-                    self?.errorMessage = "Failed to load games: \(error.localizedDescription)"
-                    self?.isLoading = false
+                    self.games = sortedGames
+                    self.applyCurrentFilters()
+                    self.isLoading = false
+                case .failure:
+                    self.isLoading = false
+                    if self.games.isEmpty {
+                        self.errorMessage = "Failed to load games"
+                    }
                 }
             }
         }
     }
     
+    private func applyCurrentFilters() {
+        performSearch(
+            searchText: searchText,
+            sortType: selectedSortType,
+            genre: selectedGenre,
+            console: selectedConsole
+        )
+    }
     
-    private func performSearch(searchText: String, sortType: String?, genre: String?) {
-        var results: [Game]
+    private func performSearch(searchText: String, sortType: String?, genre: String?, console: String?) {
+        var results = games.isEmpty ? coreDataService.getAllGames(sortType: sortType) : games
         
-        if !searchText.isEmpty && !(genre?.isEmpty ?? true) {
-            // Both search and genre filter
-            results = coreDataService.searchGamesFiltered(
-                query: searchText,
-                genre: genre ?? "",
-                sortType: sortType
-            )
-        } else if !searchText.isEmpty {
-            // Only search
-            results = coreDataService.searchGames(query: searchText, sortType: sortType)
-        } else if !(genre?.isEmpty ?? true) {
-            // Only genre filter
-            results = coreDataService.searchGamesByGenre(genre: genre ?? "", sortType: sortType)
-        } else {
-            // No filters, get all games
-            results = coreDataService.getAllGames(sortType: sortType)
+        if !searchText.isEmpty {
+            results = results.filter { game in
+                game.name?.range(of: searchText, options: [.caseInsensitive, .diacriticInsensitive]) != nil
+            }
+        }
+        if let genre, !genre.isEmpty {
+            results = results.filter { GameDisplay.matchesGenre($0, selected: genre) }
+        }
+        if let console, !console.isEmpty {
+            results = results.filter { GameDisplay.matchesConsole($0, selected: console) }
         }
         
-        // Apply client-side sorting for release dates (similar to AmiiboListViewModel)
-        if let sortType = sortType, sortType.contains("Release Date") {
-            results = sortGamesByReleaseDate(games: results, ascending: sortType.contains("Oldest"))
+        results = sortGames(results, sortType: sortType)
+        
+        if results.isEmpty && !filteredGames.isEmpty &&
+            (isFetchingIgdb || (searchText.isEmpty && genre == nil && console == nil)) {
+            return
         }
         
         filteredGames = results
     }
     
-    func searchGames(query: String) {
-        searchText = query
-    }
-    
-    func searchGamesFiltered(query: String, genre: String) {
-        searchText = query
-        selectedGenre = genre.isEmpty ? nil : genre
+    private func sortGames(_ games: [Game], sortType: String?) -> [Game] {
+        switch sortType {
+        case "Name (Z-A)":
+            return games.sorted { ($0.name ?? "") > ($1.name ?? "") }
+        case "Rating (High to Low)":
+            return games.sorted { ($0.rating ?? 0) > ($1.rating ?? 0) }
+        case "Rating (Low to High)":
+            return games.sorted { ($0.rating ?? 0) < ($1.rating ?? 0) }
+        case "Release Date (Newest)":
+            return sortGamesByReleaseDate(games: games, ascending: false)
+        case "Release Date (Oldest)":
+            return sortGamesByReleaseDate(games: games, ascending: true)
+        default:
+            return games.sorted { ($0.name ?? "") < ($1.name ?? "") }
+        }
     }
     
     func selectSortType(_ sortType: String) {
         selectedSortType = sortType
-        searchText = "" // Clear search when sorting
+        searchText = ""
     }
     
     func removeSortType() {
@@ -184,13 +161,21 @@ class GamesViewModel: ObservableObject {
     
     func selectGenre(_ genre: String) {
         selectedGenre = genre
-        searchText = "" // Clear search when filtering
+        searchText = ""
     }
     
     func removeGenre() {
         selectedGenre = nil
     }
     
+    func selectConsole(_ console: String) {
+        selectedConsole = console
+        searchText = ""
+    }
+    
+    func removeConsole() {
+        selectedConsole = nil
+    }
     
     private func sortGamesByReleaseDate(games: [Game], ascending: Bool) -> [Game] {
         let formatter = DateFormatter()

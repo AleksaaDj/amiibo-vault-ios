@@ -1,5 +1,6 @@
 import SwiftUI
 import Kingfisher
+import UIKit
 
 // MARK: - Collection Post Images (Firebase)
 struct CollectionPostKingfisherImage: View {
@@ -39,13 +40,22 @@ struct AmiiboListKingfisherImage: View {
     let height: CGFloat
     let cornerRadius: CGFloat
     let shadowRadius: CGFloat
+    let onImageLoaded: ((UIImage) -> Void)?
     
-    init(url: String, width: CGFloat = 80, height: CGFloat = 80, cornerRadius: CGFloat = 8, shadowRadius: CGFloat = 8) {
+    init(
+        url: String,
+        width: CGFloat = 80,
+        height: CGFloat = 80,
+        cornerRadius: CGFloat = 8,
+        shadowRadius: CGFloat = 8,
+        onImageLoaded: ((UIImage) -> Void)? = nil
+    ) {
         self.url = url
         self.width = width
         self.height = height
         self.cornerRadius = cornerRadius
         self.shadowRadius = shadowRadius
+        self.onImageLoaded = onImageLoaded
     }
     
     var body: some View {
@@ -57,6 +67,9 @@ struct AmiiboListKingfisherImage: View {
                     .overlay(
                         ProgressView()
                     )
+            }
+            .onSuccess { result in
+                onImageLoaded?(result.image)
             }
             .onFailure { _ in
                 // Handle failure if needed
@@ -155,13 +168,22 @@ struct FeaturedAmiiboKingfisherImage: View {
     let height: CGFloat
     let cornerRadius: CGFloat
     let shadowRadius: CGFloat
+    let onImageLoaded: ((UIImage) -> Void)?
     
-    init(url: String, width: CGFloat = 140, height: CGFloat = 140, cornerRadius: CGFloat = 8, shadowRadius: CGFloat = 8) {
+    init(
+        url: String,
+        width: CGFloat = 140,
+        height: CGFloat = 140,
+        cornerRadius: CGFloat = 8,
+        shadowRadius: CGFloat = 8,
+        onImageLoaded: ((UIImage) -> Void)? = nil
+    ) {
         self.url = url
         self.width = width
         self.height = height
         self.cornerRadius = cornerRadius
         self.shadowRadius = shadowRadius
+        self.onImageLoaded = onImageLoaded
     }
     
     var body: some View {
@@ -173,6 +195,9 @@ struct FeaturedAmiiboKingfisherImage: View {
                     .overlay(
                         ProgressView()
                     )
+            }
+            .onSuccess { result in
+                onImageLoaded?(result.image)
             }
             .onFailure { _ in
                 // Handle failure if needed

@@ -46,72 +46,30 @@ class CoreDataService: ObservableObject {
         }
     }
     
-    func searchGames(query: String, sortType: String? = nil) -> [Game] {
-        let request: NSFetchRequest<GameEntity> = GameEntity.fetchRequest()
-        
-        if !query.isEmpty {
-            request.predicate = NSPredicate(format: "name CONTAINS[cd] %@", query)
-        }
-        
-        request.sortDescriptors = getGameSortDescriptors(for: sortType)
-        
+    /// Deletes only `GameEntity` rows. Collection / wishlist / amiibo entities are untouched.
+    func deleteAllGames() {
+        let fetch: NSFetchRequest<NSFetchRequestResult> = GameEntity.fetchRequest()
+        let request = NSBatchDeleteRequest(fetchRequest: fetch)
+        request.resultType = .resultTypeObjectIDs
         do {
-            let entities = try context.fetch(request)
-            return entities.map { entity in
-                convertGameEntityToGame(entity)
+            let result = try context.execute(request) as? NSBatchDeleteResult
+            if let objectIDs = result?.result as? [NSManagedObjectID] {
+                NSManagedObjectContext.mergeChanges(
+                    fromRemoteContextSave: [NSDeletedObjectsKey: objectIDs],
+                    into: [context]
+                )
             }
         } catch {
-            print("Failed to search games: \(error)")
-            return []
+            print("Failed to delete Game entities: \(error)")
         }
     }
-    
-    func searchGamesByGenre(genre: String, sortType: String? = nil) -> [Game] {
-        let request: NSFetchRequest<GameEntity> = GameEntity.fetchRequest()
-        request.predicate = NSPredicate(format: "genres CONTAINS[cd] %@", genre)
-        request.sortDescriptors = getGameSortDescriptors(for: sortType)
-        
-        do {
-            let entities = try context.fetch(request)
-            return entities.map { entity in
-                convertGameEntityToGame(entity)
-            }
-        } catch {
-            print("Failed to search games by genre: \(error)")
-            return []
-        }
+
+    func replaceAllGames(_ games: [Game]) {
+        deleteAllGames()
+        saveGames(games)
+        NotificationCenter.default.post(name: .gamesCacheDidChange, object: nil)
     }
-    
-    func searchGamesFiltered(query: String, genre: String, sortType: String? = nil) -> [Game] {
-        let request: NSFetchRequest<GameEntity> = GameEntity.fetchRequest()
-        
-        var predicates: [NSPredicate] = []
-        
-        if !query.isEmpty {
-            predicates.append(NSPredicate(format: "name CONTAINS[cd] %@", query))
-        }
-        
-        if !genre.isEmpty {
-            predicates.append(NSPredicate(format: "genres CONTAINS[cd] %@", genre))
-        }
-        
-        if !predicates.isEmpty {
-            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
-        }
-        
-        request.sortDescriptors = getGameSortDescriptors(for: sortType)
-        
-        do {
-            let entities = try context.fetch(request)
-            return entities.map { entity in
-                convertGameEntityToGame(entity)
-            }
-        } catch {
-            print("Failed to search games filtered: \(error)")
-            return []
-        }
-    }
-    
+
     func saveGames(_ games: [Game]) {
         for game in games {
             let request: NSFetchRequest<GameEntity> = GameEntity.fetchRequest()
@@ -663,4 +621,8 @@ class CoreDataService: ObservableObject {
             print("Failed to set featured amiibo: \(error)")
         }
     }
+}
+
+extension Notification.Name {
+    static let gamesCacheDidChange = Notification.Name("gamesCacheDidChange")
 }

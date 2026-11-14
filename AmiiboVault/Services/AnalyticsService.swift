@@ -38,6 +38,7 @@ class AnalyticsService: ObservableObject {
     static let GAME_AMAZON = "amazon_game_clicked_ios"
     static let GAMES_FILTER_SORT_SEARCH = "filter_sort_search_selected_games_ios"
     static let GAMES_FILTER_GENRE_SEARCH = "filter_genre_search_selected_games_ios"
+    static let GAMES_FILTER_CONSOLE_SEARCH = "filter_console_search_selected_games_ios"
     
     // Community Screen
     static let AMIIBO_COMMUNITY_SCREEN_OPENED = "community_screen_opened_ios"

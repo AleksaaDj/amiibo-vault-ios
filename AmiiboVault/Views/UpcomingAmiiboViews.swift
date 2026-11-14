@@ -46,9 +46,13 @@ struct UpcomingAmiiboListView: View {
                     }
                 }
             }
-            .navigationTitle("Upcoming amiibo")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Upcoming amiibo")
+                        .font(.headline)
+                        .foregroundColor(themeManager.isDarkMode ? .white : .black)
+                }
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "chevron.left")
@@ -56,8 +60,16 @@ struct UpcomingAmiiboListView: View {
                     }
                 }
             }
+            .toolbarBackground(
+                themeManager.isDarkMode
+                    ? Color(red: 0.133, green: 0.133, blue: 0.145)
+                    : Color(red: 1.0, green: 0.984, blue: 0.996),
+                for: .navigationBar
+            )
+            .toolbarBackground(.visible, for: .navigationBar)
             .background(themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(red: 1.0, green: 0.984, blue: 0.996))
         }
+        .preferredColorScheme(themeManager.isDarkMode ? .dark : .light)
         .onAppear {
             viewModel.loadUpcoming()
         }

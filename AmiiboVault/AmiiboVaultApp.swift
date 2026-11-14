@@ -131,6 +131,7 @@ struct AmiiboVaultApp: App {
         Database.database().isPersistenceEnabled = true
         Analytics.setAnalyticsCollectionEnabled(true)
         _ = PurchaseManager.shared
+        IgdbApiService.shared.prefetchIfNeeded()
     }
 
     var body: some Scene {

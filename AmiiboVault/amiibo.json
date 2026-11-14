@@ -15199,6 +15199,64 @@
       },
       "tail": "04a70902",
       "type": "Figure"
+    },
+    {
+      "amiiboSeries": "My Mario Wooden Blocks",
+      "character": "Mario",
+      "gameSeries": "Super Mario",
+      "head": "00000004",
+      "image": "https://raw.githubusercontent.com/8bitDream/AmiiboAPI/master/images/icon_00000004-04431c02.png",
+      "name": "Mario (Melody Car)",
+      "release": {
+        "jp": "2026-10-20"
+      },
+      "tail": "04431c02",
+      "type": "Block"
+    },
+    {
+      "amiiboSeries": "My Mario Wooden Blocks",
+      "character": "Toad",
+      "gameSeries": "Super Mario",
+      "head": "000a0004",
+      "image": "https://raw.githubusercontent.com/8bitDream/AmiiboAPI/master/images/icon_000a0004-04451c02.png",
+      "name": "Toad - My Mario Wooden Blocks",
+      "release": {
+        "jp": "2026-10-20"
+      },
+      "tail": "04451c02",
+      "type": "Block"
+    },
+    {
+      "amiiboSeries": "Kirby Air Riders",
+      "character": "Sword Kirby",
+      "gameSeries": "Kirby",
+      "head": "1f000100",
+      "image": "https://raw.githubusercontent.com/8bitDream/AmiiboAPI/master/images/icon_1f000100-04c51e03.png",
+      "name": "Sword Kirby & Dragoon",
+      "release": {
+        "au": "2026-11-12",
+        "eu": "2026-11-12",
+        "jp": "2026-11-12",
+        "na": "2026-11-12"
+      },
+      "tail": "04c51e03",
+      "type": "Figure"
+    },
+    {
+      "amiiboSeries": "Kirby Air Riders",
+      "character": "Noir Dedede",
+      "gameSeries": "Kirby",
+      "head": "1f020100",
+      "image": "https://raw.githubusercontent.com/8bitDream/AmiiboAPI/master/images/icon_1f020100-04c81e03.png",
+      "name": "Noir Dedede & Hydra",
+      "release": {
+        "au": "2026-11-12",
+        "eu": "2026-11-12",
+        "jp": "2026-11-12",
+        "na": "2026-11-12"
+      },
+      "tail": "04c81e03",
+      "type": "Figure"
     }
   ]
 }

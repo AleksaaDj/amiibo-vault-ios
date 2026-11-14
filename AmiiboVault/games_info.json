@@ -117016,20 +117016,98 @@
 		"0x0000040004c10102": {
 			"games3DS": [],
 			"gamesWiiU": [],
-			"gamesSwitch": [],
-			"gamesSwitch2": []
+			"gamesSwitch": [
+				{
+					"gameName": "Super Mario Bros. Wonder",
+					"gameID": [
+						"010015100B514000"
+					],
+					"amiiboUsage": [
+						{
+							"Usage": "Receive helpful power-ups as you play through courses",
+							"write": false
+						}
+					]
+				}
+			],
+			"gamesSwitch2": [
+				{
+					"gameName": "Super Mario Bros. Wonder",
+					"gameID": [
+						"010015100B514000"
+					],
+					"amiiboUsage": [
+						{
+							"Usage": "Receive helpful power-ups as you play through courses / Get decorations for Camp Central in Bellabel Park (Switch 2 Edition)",
+							"write": false
+						}
+					]
+				}
+			]
 		},
 		"0x000a010004c20102": {
 			"games3DS": [],
 			"gamesWiiU": [],
-			"gamesSwitch": [],
-			"gamesSwitch2": []
+			"gamesSwitch": [
+				{
+					"gameName": "Super Mario Bros. Wonder",
+					"gameID": [
+						"010015100B514000"
+					],
+					"amiiboUsage": [
+						{
+							"Usage": "Receive helpful power-ups as you play through courses",
+							"write": false
+						}
+					]
+				}
+			],
+			"gamesSwitch2": [
+				{
+					"gameName": "Super Mario Bros. Wonder",
+					"gameID": [
+						"010015100B514000"
+					],
+					"amiiboUsage": [
+						{
+							"Usage": "Receive helpful power-ups as you play through courses / Get decorations for Camp Central in Bellabel Park (Switch 2 Edition)",
+							"write": false
+						}
+					]
+				}
+			]
 		},
 		"0x0025010004c30102": {
 			"games3DS": [],
 			"gamesWiiU": [],
-			"gamesSwitch": [],
-			"gamesSwitch2": []
+			"gamesSwitch": [
+				{
+					"gameName": "Super Mario Bros. Wonder",
+					"gameID": [
+						"010015100B514000"
+					],
+					"amiiboUsage": [
+						{
+							"Usage": "Receive helpful power-ups as you play through courses",
+							"write": false
+						}
+					]
+				}
+			],
+			"gamesSwitch2": [
+				{
+					"gameName": "Super Mario Bros. Wonder",
+					"gameID": [
+						"010015100B514000"
+					],
+					"amiiboUsage": [
+						{
+							"Usage": "Receive helpful power-ups as you play through courses / Get decorations for Camp Central in Bellabel Park (Switch 2 Edition)",
+							"write": false
+						}
+					]
+				}
+			]
 		},
 		"0x350c000004fa0f02": {
 			"games3DS": [],
@@ -117091,56 +117169,185 @@
 		"0x0000050004e90102": {
 			"games3DS": [],
 			"gamesWiiU": [],
-			"gamesSwitch": [],
+			"gamesSwitch": [
+				{
+					"gameName": "Super Mario Galaxy",
+					"gameID": [
+						"010099C022B96000"
+					],
+					"amiiboUsage": [
+						{
+							"Usage": "Receive a Life Mushroom",
+							"write": false
+						}
+					]
+				},
+				{
+					"gameName": "Super Mario Galaxy 2",
+					"gameID": [
+						"0100FD8022DAA000"
+					],
+					"amiiboUsage": [
+						{
+							"Usage": "Receive a Life Mushroom",
+							"write": false
+						}
+					]
+				}
+			],
 			"gamesSwitch2": []
 		},
 		"0x0004010004ea0102": {
 			"games3DS": [],
 			"gamesWiiU": [],
-			"gamesSwitch": [],
+			"gamesSwitch": [
+				{
+					"gameName": "Super Mario Galaxy",
+					"gameID": [
+						"010099C022B96000"
+					],
+					"amiiboUsage": [
+						{
+							"Usage": "Receive a 1-Up Mushroom",
+							"write": false
+						}
+					]
+				},
+				{
+					"gameName": "Super Mario Galaxy 2",
+					"gameID": [
+						"0100FD8022DAA000"
+					],
+					"amiiboUsage": [
+						{
+							"Usage": "Receive a 1-Up Mushroom",
+							"write": false
+						}
+					]
+				}
+			],
 			"gamesSwitch2": []
 		},
 		"0x3580000005062102": {
 			"games3DS": [],
 			"gamesWiiU": [],
 			"gamesSwitch": [],
-			"gamesSwitch2": []
+			"gamesSwitch2": [
+				{
+					"gameName": "Pragmata",
+					"gameID": [],
+					"amiiboUsage": [
+						{
+							"Usage": "Receive a supply of weapons and recovery items (up to three kinds of items per use)",
+							"write": false
+						}
+					]
+				}
+			]
 		},
 		"0x1f02000004c71e03": {
 			"games3DS": [],
 			"gamesWiiU": [],
 			"gamesSwitch": [],
-			"gamesSwitch2": []
+			"gamesSwitch2": [
+				{
+					"gameName": "Kirby Air Riders",
+					"gameID": [
+						"040077201BE50000"
+					],
+					"amiiboUsage": [
+						{
+							"Usage": "Race and train up a computer-controlled Figure Player of the character / Change main menu cursor doll to match amiibo",
+							"write": true
+						}
+					]
+				}
+			]
 		},
 		"0x0807000004f70402": {
 			"games3DS": [],
 			"gamesWiiU": [],
 			"gamesSwitch": [],
-			"gamesSwitch2": []
+			"gamesSwitch2": [
+				{
+					"gameName": "Splatoon Raiders",
+					"gameID": [],
+					"amiiboUsage": [
+						{
+							"Usage": "Unlock the Hohojiro Fighting Gear outfit",
+							"write": false
+						}
+					]
+				}
+			]
 		},
 		"0x0808000004f80402": {
 			"games3DS": [],
 			"gamesWiiU": [],
 			"gamesSwitch": [],
-			"gamesSwitch2": []
+			"gamesSwitch2": [
+				{
+					"gameName": "Splatoon Raiders",
+					"gameID": [],
+					"amiiboUsage": [
+						{
+							"Usage": "Unlock the Onaga Fighting Gear outfit",
+							"write": false
+						}
+					]
+				}
+			]
 		},
 		"0x0809000004f90402": {
 			"games3DS": [],
 			"gamesWiiU": [],
 			"gamesSwitch": [],
-			"gamesSwitch2": []
+			"gamesSwitch2": [
+				{
+					"gameName": "Splatoon Raiders",
+					"gameID": [],
+					"amiiboUsage": [
+						{
+							"Usage": "Unlock the Manta Fighting Gear outfit",
+							"write": false
+						}
+					]
+				}
+			]
 		},
 		"0x3540000005032002": {
 			"games3DS": [],
 			"gamesWiiU": [],
 			"gamesSwitch": [],
-			"gamesSwitch2": []
+			"gamesSwitch2": [
+				{
+					"gameName": "Resident Evil Requiem",
+					"gameID": [],
+					"amiiboUsage": [
+						{
+							"Usage": "Unlock an exclusive weapon skin for Grace's S&S M232",
+							"write": false
+						}
+					]
+				}
+			]
 		},
 		"0x3541000005042002": {
 			"games3DS": [],
 			"gamesWiiU": [],
 			"gamesSwitch": [],
-			"gamesSwitch2": []
+			"gamesSwitch2": [
+				{
+					"gameName": "Resident Evil Requiem",
+					"gameID": [],
+					"amiiboUsage": [
+						{
+							"Usage": "Unlock an exclusive weapon skin for the Requiem weapon",
+							"write": false
+						}
+					]
+				}
+			]
 		},
 		"0x1f04000004ca1e03": {
 			"games3DS": [],
@@ -117164,8 +117371,100 @@
 		"0x010d000004a70902": {
 			"games3DS": [],
 			"gamesWiiU": [],
+			"gamesSwitch": [
+				{
+					"gameName": "The Legend of Zelda: Breath of the Wild",
+					"gameID": [
+						"01007EF00011E000"
+					],
+					"amiiboUsage": [
+						{
+							"Usage": "Receive materials and a rare or exclusive item",
+							"write": false
+						}
+					]
+				},
+				{
+					"gameName": "The Legend of Zelda: Tears of the Kingdom",
+					"gameID": [
+						"0100F2C0115B6000"
+					],
+					"amiiboUsage": [
+						{
+							"Usage": "Receive materials and a weapon or rare item",
+							"write": false
+						},
+						{
+							"Usage": "Unlock an amiibo-exclusive character-specific paraglider fabric",
+							"write": false
+						}
+					]
+				}
+			],
+			"gamesSwitch2": [
+				{
+					"gameName": "Hyrule Warriors: Age of Imprisonment",
+					"gameID": [],
+					"amiiboUsage": [
+						{
+							"Usage": "Receive random items",
+							"write": false
+						}
+					]
+				}
+			]
+		},
+		"0x0000000404431c02": {
+			"empty": true,
+			"games3DS": [],
+			"gamesWiiU": [],
 			"gamesSwitch": [],
 			"gamesSwitch2": []
+		},
+		"0x000a000404451c02": {
+			"empty": true,
+			"games3DS": [],
+			"gamesWiiU": [],
+			"gamesSwitch": [],
+			"gamesSwitch2": []
+		},
+		"0x1f00010004c51e03": {
+			"games3DS": [],
+			"gamesWiiU": [],
+			"gamesSwitch": [],
+			"gamesSwitch2": [
+				{
+					"gameName": "Kirby Air Riders",
+					"gameID": [
+						"040077201BE50000"
+					],
+					"amiiboUsage": [
+						{
+							"Usage": "Race and train up a computer-controlled Figure Player of the character / Change main menu cursor doll to match amiibo",
+							"write": true
+						}
+					]
+				}
+			]
+		},
+		"0x1f02010004c81e03": {
+			"games3DS": [],
+			"gamesWiiU": [],
+			"gamesSwitch": [],
+			"gamesSwitch2": [
+				{
+					"gameName": "Kirby Air Riders",
+					"gameID": [
+						"040077201BE50000"
+					],
+					"amiiboUsage": [
+						{
+							"Usage": "Race and train up a computer-controlled Figure Player of the character / Change main menu cursor doll to match amiibo",
+							"write": true
+						}
+					]
+				}
+			]
 		}
 	}
 }

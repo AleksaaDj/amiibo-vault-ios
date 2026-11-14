@@ -1,5 +1,4 @@
 import SwiftUI
-import FirebaseAnalytics
 import Kingfisher
 
 struct GamesView: View {
@@ -9,6 +8,7 @@ struct GamesView: View {
     @StateObject private var analyticsService = AnalyticsService.shared
     @State private var showingSortOptions = false
     @State private var showingGenreOptions = false
+    @State private var showingConsoleOptions = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -34,35 +34,26 @@ struct GamesView: View {
             GameFilterControlsView(
                 selectedSortType: $viewModel.selectedSortType,
                 selectedGenre: $viewModel.selectedGenre,
-                availableGenres: viewModel.availableGenres,
+                selectedConsole: $viewModel.selectedConsole,
                 showingSortOptions: $showingSortOptions,
                 showingGenreOptions: $showingGenreOptions,
-                onSortTypeSelected: { sortType in
-                    viewModel.selectSortType(sortType)
-                },
-                onSortTypeRemoved: {
-                    viewModel.removeSortType()
-                },
-                onGenreSelected: { genre in
-                    viewModel.selectGenre(genre)
-                },
-                onGenreRemoved: {
-                    viewModel.removeGenre()
-                }
+                showingConsoleOptions: $showingConsoleOptions
             )
             .padding(.horizontal)
-            .padding(.top, 8)
+            .padding(.top, 6)
             
             Divider()
-                .padding(.top, 8)
+                .padding(.vertical, 8)
             
             // Content
-            if viewModel.isLoading {
+            if !viewModel.filteredGames.isEmpty {
+                GameListView(games: viewModel.filteredGames, isGameDetailsPresented: $isGameDetailsPresented)
+            } else if viewModel.isLoading || (viewModel.games.isEmpty && viewModel.errorMessage == nil && viewModel.searchText.isEmpty && viewModel.selectedGenre == nil && viewModel.selectedConsole == nil) {
                 Spacer()
                 ProgressView()
                     .scaleEffect(1.2)
                 Spacer()
-            } else if viewModel.filteredGames.isEmpty {
+            } else {
                 Spacer()
                 VStack(spacing: 16) {
                     Image(systemName: "gamecontroller")
@@ -79,18 +70,13 @@ struct GamesView: View {
                         .foregroundColor(.secondary)
                 }
                 Spacer()
-            } else {
-                GameListView(games: viewModel.filteredGames, isGameDetailsPresented: $isGameDetailsPresented)
             }
         }
-            .background(themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(red: 1.0, green: 0.984, blue: 0.996))
-            .onAppear {
-                // Only load games if not already loaded
+        .background(themeManager.isDarkMode ? Color(red: 0.133, green: 0.133, blue: 0.145) : Color(red: 1.0, green: 0.984, blue: 0.996))
+        .onAppear {
                 if viewModel.games.isEmpty {
                     viewModel.loadGames()
                 }
-                
-                // Log screen view
                 analyticsService.logScreenView("games_screen", screenClass: "GamesView")
                 analyticsService.logEvent(AnalyticsService.AMIIBO_GAMES_SCREEN_OPENED)
             }
@@ -110,7 +96,7 @@ struct GamesView: View {
             }
             .sheet(isPresented: $showingGenreOptions) {
                 GenreOptionsView(
-                    genres: viewModel.availableGenres,
+                    genres: viewModel.availableGenreOptions,
                     selectedGenre: $viewModel.selectedGenre,
                     onGenreSelected: { genre in
                         viewModel.selectGenre(genre)
@@ -119,6 +105,20 @@ struct GamesView: View {
                     onRemoveGenre: {
                         viewModel.removeGenre()
                         showingGenreOptions = false
+                    }
+                )
+            }
+            .sheet(isPresented: $showingConsoleOptions) {
+                ConsoleOptionsView(
+                    consoles: viewModel.availableConsoles,
+                    selectedConsole: $viewModel.selectedConsole,
+                    onConsoleSelected: { console in
+                        viewModel.selectConsole(console)
+                        showingConsoleOptions = false
+                    },
+                    onRemoveConsole: {
+                        viewModel.removeConsole()
+                        showingConsoleOptions = false
                     }
                 )
             }
@@ -199,8 +199,8 @@ struct GameListItemView: View {
                         .foregroundColor(themeManager.isDarkMode ? .white : .black)
                         .lineLimit(2)
                     
-                    if let released = game.released {
-                        Text(formatReleaseDate(released))
+                    if let released = GameDisplay.formatReleaseDate(game.released) {
+                        Text(released)
                             .font(.caption)
                             .foregroundColor(themeManager.isDarkMode ? .white.opacity(0.7) : .secondary)
                     }
@@ -212,7 +212,7 @@ struct GameListItemView: View {
                 
                 // Rating and metacritic at the bottom
                 HStack(spacing: 6) {
-                    if let rating = game.rating {
+                    if let rating = game.rating, rating > 0 {
                         HStack(spacing: 1) {
                             Image(systemName: "star.fill")
                                 .foregroundColor(.yellow)
@@ -228,7 +228,7 @@ struct GameListItemView: View {
                         .clipShape(Capsule())
                     }
                     
-                    if let metacritic = game.metacritic {
+                    if let metacritic = game.metacritic, metacritic > 0 {
                         HStack(spacing: 1) {
                             Image(systemName: "m.circle.fill")
                                 .foregroundColor(.green)
@@ -258,18 +258,6 @@ struct GameListItemView: View {
         )
     }
     
-    private func formatReleaseDate(_ dateString: String) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        
-        if let date = formatter.date(from: dateString) {
-            let displayFormatter = DateFormatter()
-            displayFormatter.dateFormat = "MMM dd, yyyy"
-            return displayFormatter.string(from: date)
-        }
-        
-        return dateString
-    }
 }
 
 
@@ -277,65 +265,58 @@ struct GameListItemView: View {
 struct GameFilterControlsView: View {
     @Binding var selectedSortType: String?
     @Binding var selectedGenre: String?
-    let availableGenres: [String]
+    @Binding var selectedConsole: String?
     @Binding var showingSortOptions: Bool
     @Binding var showingGenreOptions: Bool
-    let onSortTypeSelected: (String) -> Void
-    let onSortTypeRemoved: () -> Void
-    let onGenreSelected: (String) -> Void
-    let onGenreRemoved: () -> Void
+    @Binding var showingConsoleOptions: Bool
     
     var body: some View {
-        HStack {
-            // Sort Button
-            Button(action: {
+        FlowLayout(spacing: 8) {
+            filterChip(
+                icon: "arrow.up.arrow.down",
+                title: selectedSortType ?? "Sort",
+                isSelected: selectedSortType != nil
+            ) {
                 showingSortOptions = true
-            }) {
-                HStack(spacing: 2) {
-                    Image(systemName: "arrow.up.arrow.down")
-                        .font(.system(size: 12, weight: .regular))
-                        .foregroundColor(selectedSortType != nil ? .white : .red)
-                    Text(selectedSortType ?? "Sort")
-                        .font(.system(size: 12, weight: .regular))
-                        .foregroundColor(selectedSortType != nil ? .white : .red)
-                }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(selectedSortType != nil ? Color.red : Color.clear)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.red, lineWidth: selectedSortType != nil ? 0 : 1)
-                )
             }
-            
-            // Genre Button
-            Button(action: {
+            filterChip(
+                icon: "tag",
+                title: selectedGenre.map(GameDisplay.genreLabel) ?? "Genre",
+                isSelected: selectedGenre != nil
+            ) {
                 showingGenreOptions = true
-            }) {
-                HStack(spacing: 2) {
-                    Image(systemName: "tag")
-                        .font(.system(size: 12, weight: .regular))
-                        .foregroundColor(selectedGenre != nil ? .white : .red)
-                    Text(selectedGenre ?? "Genre")
-                        .font(.system(size: 12, weight: .regular))
-                        .foregroundColor(selectedGenre != nil ? .white : .red)
-                }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(selectedGenre != nil ? Color.red : Color.clear)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.red, lineWidth: selectedGenre != nil ? 0 : 1)
-                )
             }
-            
-            Spacer()
+            filterChip(
+                icon: "gamecontroller",
+                title: selectedConsole ?? "Console",
+                isSelected: selectedConsole != nil
+            ) {
+                showingConsoleOptions = true
+            }
+        }
+    }
+    
+    private func filterChip(icon: String, title: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 2) {
+                Image(systemName: icon)
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundColor(isSelected ? .white : .red)
+                Text(title)
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundColor(isSelected ? .white : .red)
+                    .lineLimit(1)
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(isSelected ? Color.red : Color.clear)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.red, lineWidth: isSelected ? 0 : 1)
+            )
         }
     }
 }
@@ -382,7 +363,7 @@ struct GameSortOptionsView: View {
 
 // MARK: - Genre Options View
 struct GenreOptionsView: View {
-    let genres: [String]
+    let genres: [GenreOption]
     @Binding var selectedGenre: String?
     let onGenreSelected: (String) -> Void
     let onRemoveGenre: () -> Void
@@ -398,15 +379,15 @@ struct GenreOptionsView: View {
                     }
                 }
                 
-                ForEach(genres, id: \.self) { genre in
+                ForEach(genres) { option in
                     Button(action: {
-                        onGenreSelected(genre)
+                        onGenreSelected(option.igdbName)
                     }) {
                         HStack {
-                            Text(genre)
+                            Text(option.label)
                                 .foregroundColor(.primary)
                             Spacer()
-                            if selectedGenre == genre {
+                            if selectedGenre == option.igdbName {
                                 Image(systemName: "checkmark")
                                     .foregroundColor(.appRed)
                             }
@@ -415,6 +396,45 @@ struct GenreOptionsView: View {
                 }
             }
             .navigationTitle("Filter by Genre")
+            .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+}
+
+struct ConsoleOptionsView: View {
+    let consoles: [String]
+    @Binding var selectedConsole: String?
+    let onConsoleSelected: (String) -> Void
+    let onRemoveConsole: () -> Void
+    
+    var body: some View {
+        NavigationView {
+            List {
+                Button(action: onRemoveConsole) {
+                    HStack {
+                        Text("Remove Filter")
+                            .foregroundColor(.red)
+                        Spacer()
+                    }
+                }
+                
+                ForEach(consoles, id: \.self) { console in
+                    Button(action: {
+                        onConsoleSelected(console)
+                    }) {
+                        HStack {
+                            Text(console)
+                                .foregroundColor(.primary)
+                            Spacer()
+                            if selectedConsole == console {
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(.appRed)
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Filter by Console")
             .navigationBarTitleDisplayMode(.inline)
         }
     }

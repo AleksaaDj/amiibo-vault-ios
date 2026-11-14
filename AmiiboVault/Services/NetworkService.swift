@@ -6,7 +6,6 @@ class NetworkService: ObservableObject {
     static let shared = NetworkService()
     
     private let baseURL = "https://amiiboapi.onrender.com/api/"
-    private let rawgBaseURL = "https://api.rawg.io/api/"
     // TEMPORARY: Using LocalJsonService while server is down
     // TODO: When server is fixed, uncomment the API calls below and comment out LocalJsonService usage
     private let localJsonService = LocalJsonService.shared
@@ -59,43 +58,6 @@ class NetworkService: ObservableObject {
         */
     }
     
-    // MARK: - Games API (RAWG)
-    func fetchNintendoGames(apiKey: String, page: Int = 1, pageSize: Int = 40) -> AnyPublisher<GamesListResponse, Error> {
-        // Platform IDs: 7=Nintendo Switch, 8=PC, 9=Xbox One, 10=Nintendo Switch, 11=Nintendo Wii U
-        // Note: Switch 2 not yet in RAWG API
-        let platforms = "7,8,9,10,11"
-        let publishers = "nintendo"
-        
-        guard let url = URL(string: "\(rawgBaseURL)games?platforms=\(platforms)&publishers=\(publishers)&page_size=\(pageSize)&page=\(page)&key=\(apiKey)") else {
-            return Fail(error: NetworkError.invalidURL)
-                .eraseToAnyPublisher()
-        }
-        
-        return URLSession.shared.dataTaskPublisher(for: url)
-            .map(\.data)
-            .decode(type: GamesListResponse.self, decoder: JSONDecoder())
-            .receive(on: DispatchQueue.main)
-            .eraseToAnyPublisher()
-    }
-    
-    func fetchAllNintendoGames(apiKey: String) -> AnyPublisher<[Game], Error> {
-        var allGames: [Game] = []
-        let pageSize = 40
-        
-        return Publishers.Sequence(sequence: 1...)
-            .flatMap { page in
-                self.fetchNintendoGames(apiKey: apiKey, page: page, pageSize: pageSize)
-            }
-            .handleEvents(receiveOutput: { response in
-                allGames.append(contentsOf: response.results)
-            })
-            .filter { response in
-                response.results.isEmpty || response.next == nil
-            }
-            .first()
-            .map { _ in allGames }
-            .eraseToAnyPublisher()
-    }
 }
 
 // MARK: - Network Error
